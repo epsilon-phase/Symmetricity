@@ -237,22 +237,22 @@ std::tuple<int, int, int, int, int, int> Agony::getBoundaries() const {
 void Agony::write_file_output(const std::string &output_name) const {
   auto boundaries = getBoundaries();
   ofstream out(output_name);
-  out<<"#dig"<<endl;
+  out << "#dig" << endl;
   for (int z = std::get<5>(boundaries); z >= std::get<2>(boundaries); z--) {
     for (int y = std::get<1>(boundaries); y <= std::get<4>(boundaries); y++) {
       for (int x = std::get<0>(boundaries); x <= std::get<3>(boundaries); x++) {
-        Eigen::Vector3d h=Eigen::Vector3d(x,y,z);
-        if(allowed.find(h)!=allowed.end()){
-          out<<allowed.find(h)->second;
-        }else{
-          out<<" ";
+        Eigen::Vector3d h = Eigen::Vector3d(x, y, z);
+        if (allowed.find(h) != allowed.end()) {
+          out << allowed.find(h)->second;
+        } else {
+          out << " ";
         }
-          out<<",";
+        out << ",";
       }
-      out<<"#"<<endl;
+      out << "#" << endl;
     }
-    if(z>std::get<2>(boundaries)+1)
-    out<<"#>"<<endl;
+    if (z > std::get<2>(boundaries) + 1)
+      out << "#>" << endl;
   }
   out.close();
 }
