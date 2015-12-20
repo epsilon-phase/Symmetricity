@@ -8,11 +8,12 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <tuple>
 #include "ReflectionMatrix.hpp"
 namespace std {
 template <>
 struct less<Eigen::Vector3d> {
-  bool operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b) {
+  bool operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b)const {
     return a[0] == b[0] ? (a[1] == b[1] ? (a[2] < b[2]) : a[1] < b[1]) : a[0] < b[0];
   }
 };
@@ -49,10 +50,11 @@ public:
   void long_desig(const sf::Vector2f& e);
   void long_desig();
   void erase_position();
+  void write_file_output(const std::string& output_name)const;
 private:
   virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
   void update() ;
-  
+  std::tuple<int,int,int,int,int,int> getBoundaries()const;
   int csize;
   int cursor_x, cursor_y;
   int current_z;

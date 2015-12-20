@@ -1,4 +1,6 @@
 #include "agony.hpp"
+#include <fstream>
+using namespace std;
 Agony::Agony() : csize(10), cursor_x(0),
                  cursor_y(0), current_z(0),
                  m_y_sym_on(false), m_x_sym_on(false),
@@ -12,7 +14,7 @@ Agony::Agony() : csize(10), cursor_x(0),
   a += (designations[current_activity] == '\0' ? 'x' : designations[current_activity]);
   zz.setString(a);
 }
-Agony::~Agony(){}
+Agony::~Agony() {}
 void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   states.transform *= getTransform();
   states.texture = NULL;
@@ -211,4 +213,46 @@ void Agony::set_thing(int x, int y, int z) {
 void Agony::erase_position() {
   Eigen::Vector3d e(-cursor_x, -cursor_y, current_z);
   allowed.erase(e);
+}
+std::tuple<int, int, int, int, int, int> Agony::getBoundaries() const {
+  int minx = 200000, miny = 200000, minz = 200000;
+  int maxx = -200000, maxy = -200000, maxz = -200000;
+  for (auto i : allowed) {
+    auto z = i.first;
+    if (z[0] < minx)
+      minx = z[0];
+    if (z[1] < miny)
+      miny = z[1];
+    if (z[2] < minz)
+      minz = z[2];
+    if (z[0] > maxx)
+      maxx = z[0];
+    if (z[1] > maxy)
+      maxy = z[1];
+    if (z[2] > maxz)
+      maxz = z[2];
+  }
+  return std::make_tuple(minx, miny, minz, maxx, maxy, maxz);
+}
+void Agony::write_file_output(const std::string &output_name) const {
+  auto boundaries = getBoundaries();
+  ofstream out(output_name);
+  out<<"#dig"<<endl;
+  for (int z = std::get<5>(boundaries); z >= std::get<2>(boundaries); z--) {
+    for (int y = std::get<1>(boundaries); y <= std::get<4>(boundaries); y++) {
+      for (int x = std::get<0>(boundaries); x <= std::get<3>(boundaries); x++) {
+        Eigen::Vector3d h=Eigen::Vector3d(x,y,z);
+        if(allowed.find(h)!=allowed.end()){
+          out<<allowed.find(h)->second;
+        }else{
+          out<<" ";
+        }
+          out<<",";
+      }
+      out<<"#"<<endl;
+    }
+    if(z>std::get<2>(boundaries)+1)
+    out<<"#>"<<endl;
+  }
+  out.close();
 }

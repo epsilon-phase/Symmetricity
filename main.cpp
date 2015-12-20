@@ -83,6 +83,8 @@ int main() {
         case sf::Keyboard::Return:
           e.long_desig();
           break;
+        case sf::Keyboard::F5:
+          e.write_file_output("output.csv");
         }
       }
     }
