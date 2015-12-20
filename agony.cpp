@@ -109,13 +109,12 @@ void Agony::long_desig() {
   if (!isDesignating) {
     m_start = Eigen::Vector3d(cursor_x, cursor_y, current_z);
   } else {
+    m_end = Eigen::Vector3d(cursor_x, cursor_y, current_z);
     if (isCircle) {
-      m_end = Eigen::Vector3d(cursor_x, cursor_y, current_z);
       draw_circle();
       isCircle = false;
 
     } else {
-      m_end = Eigen::Vector3d(cursor_x, cursor_y, current_z);
       if (m_end[0] < m_start[0])
         std::swap(m_end[0], m_start[0]);
       if (m_end[1] < m_start[1])
@@ -282,12 +281,18 @@ float distance(const Eigen::Vector3d &a, const Eigen::Vector3d &b) {
   return std::sqrt(c.x() * c.x() + c.y() * c.y() + c.z() * c.z());
 }
 void Agony::draw_circle() {
-  float r=distance(m_start,m_end);
+  float xx=(m_start[0]-m_end[0]),
+       yy=(m_start[1]-m_end[1]);
+       
+  int r=sqrt(xx*xx+yy*yy);
+  std::cout<<r<<endl;
   float hy=m_start[1];
   float hx=m_start[0];
+  std::cout<<"h="<<hx<<",k="<<hy<<endl;
   for (int x = hx-r-1; x <= hx+r+1; x++) {
-    for (int y = hy-r-1; y <= hx+r+1; y++) {
+    for (int y = hy-r-1; y <= hy+r+1; y++) {
       for (int z = m_start[2]; z <= m_end[2]; z++) {
+        cout<<x<<","<<y<<endl;
         float v = ((x - hx) * (x - hx)) / (r * r) +
                   ((y - hy) * (y - hy)) / (r * r);
         if (v <= 1) {
