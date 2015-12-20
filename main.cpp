@@ -43,17 +43,24 @@ int main() {
         e.long_desig(q);
       }
       if (event.type == sf::Event::KeyPressed) {
+        int times=1;
+        if(event.key.shift)
+          times=10;
         switch (event.key.code) {
         case sf::Keyboard::Left:
+          for(int i=0;i<times;i++)
           e.increment_cursor_x();
           break;
         case sf::Keyboard::Right:
+          for(int i=0;i<times;i++)
           e.decrement_cursor_x();
           break;
         case sf::Keyboard::Down:
+          for(int i=0;i<times;i++)
           e.decrement_cursor_y();
           break;
         case sf::Keyboard::Up:
+          for(int i=0;i<times;i++)
           e.increment_cursor_y();
           break;
         case sf::Keyboard::Period:

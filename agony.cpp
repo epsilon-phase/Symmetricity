@@ -9,13 +9,14 @@ Agony::Agony() : csize(10), cursor_x(0),
   fontthing.loadFromFile("LinLibertine_DRah.ttf");
   zz.setString("");
   zz.setFont(fontthing);
-  zz.setColor(sf::Color(255, 255, 255));
+  zz.setColor(sf::Color(255, 200, 0));
   std::string a = "Designating:";
   a += (designations[current_activity] == '\0' ? 'x' : designations[current_activity]);
   zz.setString(a);
 }
 Agony::~Agony() {}
 void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
+
   states.transform *= getTransform();
   states.texture = NULL;
   target.draw(m_vertz, states);
@@ -183,7 +184,10 @@ void Agony::increase_activity() {
   zz.setString(a);
 }
 void Agony::decrease_activity() {
-  current_activity--;
+  if (current_activity == 0)
+    current_activity = 4;
+  else
+    current_activity--;
   current_activity %= 5;
   std::string a = "Designating:";
   a += designations[current_activity] == '\0' ? 'x' : designations[current_activity];
