@@ -4,7 +4,7 @@ Agony::Agony() : csize(10), cursor_x(0),
                  m_y_sym_on(false), m_x_sym_on(false),
                  isDesignating(false), current_activity(0), mouse_is_over(false) {
   m_vertz.setPrimitiveType(sf::Quads);
-  fontthing.loadFromFile("LinBiolinum_RIah.ttf");
+  fontthing.loadFromFile("LinLibertine_DRah.ttf");
   zz.setString("");
   zz.setFont(fontthing);
   zz.setColor(sf::Color(255, 255, 255));
