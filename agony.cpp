@@ -109,20 +109,27 @@ void Agony::long_desig() {
   if (!isDesignating) {
     m_start = Eigen::Vector3d(cursor_x, cursor_y, current_z);
   } else {
-    m_end = Eigen::Vector3d(cursor_x, cursor_y, current_z);
-    if (m_end[0] < m_start[0])
-      std::swap(m_end[0], m_start[0]);
-    if (m_end[1] < m_start[1])
-      std::swap(m_end[1], m_start[1]);
-    if (m_end[2] < m_start[2])
-      std::swap(m_end[2], m_start[2]);
-    //std::cout<<allowed.size()<<"/";
-    for (int i = m_start[0]; i <= m_end[0]; i++)
-      for (int j = m_start[1]; j <= m_end[1]; j++)
-        for (int k = m_start[2]; k <= m_end[2]; k++) {
-          designate(-i, -j, k);
-        }
-    update();
+    if (isCircle) {
+      m_end = Eigen::Vector3d(cursor_x, cursor_y, current_z);
+      draw_circle();
+      isCircle = false;
+
+    } else {
+      m_end = Eigen::Vector3d(cursor_x, cursor_y, current_z);
+      if (m_end[0] < m_start[0])
+        std::swap(m_end[0], m_start[0]);
+      if (m_end[1] < m_start[1])
+        std::swap(m_end[1], m_start[1]);
+      if (m_end[2] < m_start[2])
+        std::swap(m_end[2], m_start[2]);
+      //std::cout<<allowed.size()<<"/";
+      for (int i = m_start[0]; i <= m_end[0]; i++)
+        for (int j = m_start[1]; j <= m_end[1]; j++)
+          for (int k = m_start[2]; k <= m_end[2]; k++) {
+            designate(-i, -j, k);
+          }
+      update();
+    }
   }
   isDesignating = !isDesignating;
 }
@@ -259,4 +266,28 @@ void Agony::write_file_output(const std::string &output_name) const {
       out << "#>" << endl;
   }
   out.close();
+}
+void Agony::set_circle() {
+  this->isCircle = true;
+}
+float distance(const Eigen::Vector3d &a, const Eigen::Vector3d &b) {
+  auto c = Eigen::Vector3d(a.x()-b.x(),a.y()-b.y(),a.z()-b.z());
+  return std::sqrt(c.x() * c.x() + c.y() * c.y() + c.z() * c.z());
+}
+void Agony::draw_circle() {
+  float r=distance(m_start,m_end);
+  float hy=m_start[1];
+  float hx=m_start[0];
+  for (int x = hx-r-1; x <= hx+r+1; x++) {
+    for (int y = hy-r-1; y <= hx+r+1; y++) {
+      for (int z = m_start[2]; z <= m_end[2]; z++) {
+        float v = ((x - hx) * (x - hx)) / (r * r) +
+                  ((y - hy) * (y - hy)) / (r * r);
+        if (v <= 1) {
+          designate(-x, -y, z);
+        }
+      }
+    }
+  }
+  update();
 }

@@ -86,6 +86,8 @@ int main() {
           e.designate();
           break;
         case sf::Keyboard::Return:
+          if(event.key.shift)
+            e.set_circle();
           e.long_desig();
           break;
         case sf::Keyboard::F5: //TODO Write a method to select a file to write to.

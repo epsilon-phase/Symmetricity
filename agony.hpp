@@ -40,7 +40,7 @@ public:
   void add_y_symmetry_at_cursor();
   void add_x_symmetry_at_cursor() ;
   void increase_activity() ;
-  
+  void set_circle();
   void decrease_activity();
   void designate(int x, int y, int z) ;
   void insert_x_symmetry(const Eigen::Vector3d &c);
@@ -54,6 +54,7 @@ public:
 private:
   virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
   void update() ;
+  void draw_circle();
   std::tuple<int,int,int,int,int,int> getBoundaries()const;
   int csize;
   int cursor_x, cursor_y;
@@ -68,7 +69,7 @@ private:
   sf::Vector2f mouse_place;
   bool mouse_is_over;
   int xsym, ysym, zsym;
-  bool isDesignating;
+  bool isDesignating,isCircle;
   int current_activity;
   mutable sf::Text zz;
 };
