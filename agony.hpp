@@ -55,6 +55,7 @@ private:
   virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
   void update() ;
   void draw_circle();
+  void update_text();
   std::tuple<int,int,int,int,int,int> getBoundaries()const;
   int csize;
   int cursor_x, cursor_y;

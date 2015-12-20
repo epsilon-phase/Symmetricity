@@ -131,6 +131,7 @@ void Agony::long_desig() {
       update();
     }
   }
+  update_text();
   isDesignating = !isDesignating;
 }
 void Agony::insert_x_symmetry(const Eigen::Vector3d &c) {
@@ -186,9 +187,7 @@ void Agony::long_desig(const sf::Vector2f &e) {
 void Agony::increase_activity() {
   current_activity++;
   current_activity %= 5;
-  std::string a = "Designating:";
-  a += (designations[current_activity] == '\0' ? 'x' : designations[current_activity]);
-  zz.setString(a);
+  update_text();
 }
 void Agony::decrease_activity() {
   if (current_activity == 0)
@@ -196,7 +195,14 @@ void Agony::decrease_activity() {
   else
     current_activity--;
   current_activity %= 5;
-  std::string a = "Designating:";
+  update_text();
+}
+void Agony::update_text(){
+  std::string a = "Designating";
+  if(isCircle){
+    a+="(Circle)";
+  }
+  a+=":";
   a += designations[current_activity] == '\0' ? 'x' : designations[current_activity];
   zz.setString(a);
 }
@@ -269,6 +275,7 @@ void Agony::write_file_output(const std::string &output_name) const {
 }
 void Agony::set_circle() {
   this->isCircle = true;
+  update_text();
 }
 float distance(const Eigen::Vector3d &a, const Eigen::Vector3d &b) {
   auto c = Eigen::Vector3d(a.x()-b.x(),a.y()-b.y(),a.z()-b.z());
