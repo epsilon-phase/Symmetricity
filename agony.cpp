@@ -10,7 +10,7 @@ Agony::Agony() : csize(10), cursor_x(0),
   zz.setString("");
   zz.setFont(fontthing);
   zz.setColor(sf::Color(255, 255, 255));
-  std::string a = "";
+  std::string a = "Designating:";
   a += (designations[current_activity] == '\0' ? 'x' : designations[current_activity]);
   zz.setString(a);
 }
@@ -178,14 +178,14 @@ void Agony::long_desig(const sf::Vector2f &e) {
 void Agony::increase_activity() {
   current_activity++;
   current_activity %= 5;
-  std::string a = "";
+  std::string a = "Designating:";
   a += (designations[current_activity] == '\0' ? 'x' : designations[current_activity]);
   zz.setString(a);
 }
 void Agony::decrease_activity() {
   current_activity--;
   current_activity %= 5;
-  std::string a = "";
+  std::string a = "Designating:";
   a += designations[current_activity] == '\0' ? 'x' : designations[current_activity];
   zz.setString(a);
 }

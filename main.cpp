@@ -8,8 +8,7 @@
 struct point;
 using namespace std;
 int main() {
-  cout << "Hello World!" << endl;
-  sf::RenderWindow r(sf::VideoMode(520, 256), "tile");
+  sf::RenderWindow r(sf::VideoMode(520, 256), "Symmetricity");
   Agony e;
   sf::View q;
   q.setSize(520,256);
@@ -83,7 +82,7 @@ int main() {
         case sf::Keyboard::Return:
           e.long_desig();
           break;
-        case sf::Keyboard::F5:
+        case sf::Keyboard::F5://TODO Write a method to select a file to write to.
           e.write_file_output("output.csv");
         }
       }
