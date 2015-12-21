@@ -81,6 +81,9 @@ void Agony::update() {
       } else {
         torem.push_back(i.first);
       }
+    }else{
+      if(std::round(i.first.z()) > current_z)
+        break;
     }
   }
   for (auto i : torem)
@@ -161,10 +164,8 @@ void Agony::insert_x_symmetry(const Eigen::Vector3d &c) {
     }
     allowed[f] = designations[current_activity];
     insert_y_symmetry(f);
-    insert_radial_symmetry(f);
   }
   insert_y_symmetry(c);
-  insert_radial_symmetry(c);
 }
 void Agony::insert_y_symmetry(const Eigen::Vector3d &c) {
 
@@ -177,7 +178,7 @@ void Agony::insert_y_symmetry(const Eigen::Vector3d &c) {
       f = Eigen::Vector3d(c.x(), (ysym)-diff, c.z());
     }
     allowed[f] = designations[current_activity];
-    insert_radial_symmetry(f);
+    
   }
 }
 void Agony::insert_radial_symmetry(const Eigen::Vector3d &c){
@@ -186,13 +187,15 @@ void Agony::insert_radial_symmetry(const Eigen::Vector3d &c){
     int diff_y=c.y()-r_sym_y;
     auto f=Eigen::Vector3d(r_sym_x-diff_x,r_sym_y-diff_y,c.z());
     allowed[f]=designations[current_activity];
+    insert_x_symmetry(f);
   }
+  insert_x_symmetry(c);
 }
 void Agony::designate(int x, int y, int z) {
   //std::cout<<x<<","<<y<<","<<z<<std::endl;
   Eigen::Vector3d c(x, y, z);
   allowed[c] = designations[current_activity];
-  insert_x_symmetry(c);
+  insert_radial_symmetry(c);
 }
 void Agony::designate() {
   //std::cout << cursor_x << "," << cursor_y << std::endl;
@@ -319,7 +322,7 @@ void Agony::draw_circle() {
        yy=(m_start[1]-m_end[1]);
        
   int r=sqrt(xx*xx+yy*yy);
-  std::cout<<r<<endl;
+  //std::cout<<r<<endl;
   float hy=m_start[1];
   float hx=m_start[0];
   std::cout<<"h="<<hx<<",k="<<hy<<endl;
@@ -342,4 +345,8 @@ void Agony::move_over(int x,int y){
   g.x/=csize;
   g.y/=csize;
   setOrigin(g.x*csize+x*csize, g.y*csize+y*csize);
+}
+void Agony::set_designation_type(int i){
+  current_activity=i;
+  update_text();
 }

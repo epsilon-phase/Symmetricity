@@ -10,11 +10,13 @@
 #include <string>
 #include <tuple>
 #include "TransformationMatrix.hpp"
+#include "pathfinder.hpp"
 namespace std {
 template <>
 struct less<Eigen::Vector3d> {
   bool operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b)const {
-    return a[0] == b[0] ? (a[1] == b[1] ? (a[2] < b[2]) : a[1] < b[1]) : a[0] < b[0];
+    //return a[0] == b[0] ? (a[1] == b[1] ? (a[2] < b[2]) : a[1] < b[1]) : a[0] < b[0];
+    return a[2]==b[2]?(a[0]==b[0]?a[1]<b[1]:a[0]<b[0]):a[2]<b[2];
   }
 };
 }
@@ -22,6 +24,7 @@ static const char designations[] = {'d', 'i', 'j', 'u', '\0'};
 class Agony : public sf::Drawable, public sf::Transformable {
 
 public:
+  friend class GraphAnalyzer;
   Agony() ;
   virtual ~Agony();
   void set_thing(int x, int y, int z);
@@ -55,6 +58,7 @@ public:
   void erase_position();
   void write_file_output(const std::string& output_name)const;
   std::string getStatus()const;
+  void set_designation_type(int i);
 private:
   virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
   void update() ;

@@ -5,15 +5,21 @@
 #include <vector>
 #include <SFML/Window.hpp>
 #include "agony.hpp"
+#include "designation_menu.hpp"
 struct point;
 using namespace std;
 int main() {
   sf::RenderWindow r(sf::VideoMode(520, 256), "Symmetricity");
+  sf::RenderWindow menu(sf::VideoMode(250,250),"menu");
   Agony e;
   sf::View q;
   q.setSize(520, 256);
   q.setCenter(0, 0);
   r.setView(q);
+  Menu menustuff;
+  menustuff.addItem("dig",[&e](){
+    e.set_designation_type(0);
+  });
   /*e.set_thing(1, 1, 0);
   e.set_thing(1, 2, 0);
   e.set_thing(1, 1, -1);
@@ -110,6 +116,16 @@ int main() {
         }
       }
     }
+    while(menu.pollEvent(event)){
+      if(event.type==sf::Event::MouseButtonPressed){
+        auto q=sf::Mouse::getPosition(menu);
+        
+        menustuff.onclick(menu.mapPixelToCoords(q));
+      }
+    }
+    menu.clear();
+    menu.draw(menustuff);
+    menu.display();
     r.clear();
     r.draw(e);
     r.display();
