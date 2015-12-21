@@ -97,6 +97,9 @@ int main() {
         case sf::Keyboard::Space:
           e.designate();
           break;
+        case sf::Keyboard::R:
+          e.add_radial_symmetry_at_cursor();
+          break;
         case sf::Keyboard::Return:
           if (event.key.shift)
             e.set_circle();

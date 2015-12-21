@@ -39,13 +39,15 @@ public:
   void decrement_cursor_y() { cursor_y--; }
   void move_over(int x,int y);
   void add_y_symmetry_at_cursor();
-  void add_x_symmetry_at_cursor() ;
+  void add_x_symmetry_at_cursor();
+  void add_radial_symmetry_at_cursor();
   void increase_activity() ;
   void set_circle();
   void decrease_activity();
   void designate(int x, int y, int z) ;
   void insert_x_symmetry(const Eigen::Vector3d &c);
   void insert_y_symmetry(const Eigen::Vector3d &c);
+  void insert_radial_symmetry(const Eigen::Vector3d& c);
   void designate();
   void mouse_over(const sf::Vector2f& e);
   void long_desig(const sf::Vector2f& e);
@@ -75,5 +77,8 @@ private:
   bool isDesignating,isCircle;
   int current_activity;
   mutable sf::Text zz;
+  ///Radial symmetry location
+  int r_sym_x,r_sym_y;
+  bool m_radial;
 };
 #endif

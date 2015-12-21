@@ -4,7 +4,8 @@ using namespace std;
 Agony::Agony() : csize(10), cursor_x(0),
                  cursor_y(0), current_z(0),
                  m_y_sym_on(false), m_x_sym_on(false),
-                 isDesignating(false), current_activity(0), mouse_is_over(false),isCircle(false) {
+                 isDesignating(false), current_activity(0), mouse_is_over(false),isCircle(false),
+                 m_radial(false){
   m_vertz.setPrimitiveType(sf::Quads);
   fontthing.loadFromFile("LinLibertine_DRah.ttf");
   zz.setString("");
@@ -38,6 +39,12 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   ySym.setOrigin(getOrigin());
   ySym.move(0, ysym * csize+csize/2);
   ySym.setFillColor(sf::Color(255, 0, 0, 255));
+  sf::CircleShape rsym(csize/2);
+  rsym.setOrigin(getOrigin());
+  rsym.move(r_sym_x*csize,csize*r_sym_y);
+  rsym.setFillColor(sf::Color(255,200,0,150));
+  rsym.setOutlineColor(sf::Color(0,0,255,255));
+  rsym.setOutlineThickness(1);
   if (isDesignating) {
     sf::CircleShape start_desig(csize / 2);
     start_desig.setFillColor(sf::Color(255, 0, 255));
@@ -58,6 +65,8 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     target.draw(ySym);
   if (m_x_sym_on)
     target.draw(xSym);
+  if(m_radial)
+    target.draw(rsym);
   target.draw(r);
   zz.setOrigin(target.getSize().x / 2, target.getSize().y / 2);
   target.draw(zz);
@@ -152,8 +161,10 @@ void Agony::insert_x_symmetry(const Eigen::Vector3d &c) {
     }
     allowed[f] = designations[current_activity];
     insert_y_symmetry(f);
+    insert_radial_symmetry(f);
   }
   insert_y_symmetry(c);
+  insert_radial_symmetry(c);
 }
 void Agony::insert_y_symmetry(const Eigen::Vector3d &c) {
 
@@ -166,6 +177,15 @@ void Agony::insert_y_symmetry(const Eigen::Vector3d &c) {
       f = Eigen::Vector3d(c.x(), (ysym)-diff, c.z());
     }
     allowed[f] = designations[current_activity];
+    insert_radial_symmetry(f);
+  }
+}
+void Agony::insert_radial_symmetry(const Eigen::Vector3d &c){
+  if(m_radial){
+    int diff_x=c.x()-r_sym_x;
+    int diff_y=c.y()-r_sym_y;
+    auto f=Eigen::Vector3d(r_sym_x-diff_x,r_sym_y-diff_y,c.z());
+    allowed[f]=designations[current_activity];
   }
 }
 void Agony::designate(int x, int y, int z) {
@@ -227,6 +247,14 @@ void Agony::add_y_symmetry_at_cursor() {
   } else {
     m_y_sym_on = false;
   }
+}
+void Agony::add_radial_symmetry_at_cursor(){
+  if(this->m_radial||(r_sym_x!=cursor_x&&r_sym_y!=cursor_y)){
+    m_radial=true;
+    r_sym_x=cursor_x;
+    r_sym_y=cursor_y;
+  }else
+    m_radial=false;
 }
 void Agony::set_thing(int x, int y, int z) {
   allowed.insert(std::pair<Eigen::Vector3d, int>(Eigen::Vector3d(x, y, z), designations[current_activity]));
