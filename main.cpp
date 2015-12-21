@@ -32,7 +32,7 @@ int main() {
         auto q = r.mapPixelToCoords(g);
         q.x /= 10;
         q.y /= 10;
-        e.mouse_over(q);//tells the thing to display a circle where the mouse is over.
+        e.mouse_over(q); //tells the thing to display a circle where the mouse is over.
       }
       if (event.type == sf::Event::MouseButtonPressed) {
         sf::Vector2i g = sf::Mouse::getPosition(r);
@@ -46,21 +46,33 @@ int main() {
         if (event.key.shift)
           times = 10;
         switch (event.key.code) {
-        case sf::Keyboard::Left:
-          for (int i = 0; i < times; i++)
-            e.increment_cursor_x();
-          break;
         case sf::Keyboard::Right:
-          for (int i = 0; i < times; i++)
-            e.decrement_cursor_x();
+          if (event.key.control) {
+            e.move_over(1, 0);
+          } else
+            for (int i = 0; i < times; i++)
+              e.increment_cursor_x();
           break;
-        case sf::Keyboard::Down:
-          for (int i = 0; i < times; i++)
-            e.decrement_cursor_y();
+        case sf::Keyboard::Left:
+          if (event.key.control)
+            e.move_over(-1, 0);
+          else
+            for (int i = 0; i < times; i++)
+              e.decrement_cursor_x();
           break;
         case sf::Keyboard::Up:
-          for (int i = 0; i < times; i++)
-            e.increment_cursor_y();
+          if (event.key.control)
+            e.move_over(0, -1);
+          else
+            for (int i = 0; i < times; i++)
+              e.decrement_cursor_y();
+          break;
+        case sf::Keyboard::Down:
+          if (event.key.control)
+            e.move_over(0, 1);
+          else
+            for (int i = 0; i < times; i++)
+              e.increment_cursor_y();
           break;
         case sf::Keyboard::Period:
           e.increase_z();
@@ -86,7 +98,7 @@ int main() {
           e.designate();
           break;
         case sf::Keyboard::Return:
-          if(event.key.shift)
+          if (event.key.shift)
             e.set_circle();
           e.long_desig();
           break;

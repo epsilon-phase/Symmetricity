@@ -4,7 +4,7 @@ using namespace std;
 Agony::Agony() : csize(10), cursor_x(0),
                  cursor_y(0), current_z(0),
                  m_y_sym_on(false), m_x_sym_on(false),
-                 isDesignating(false), current_activity(0), mouse_is_over(false) {
+                 isDesignating(false), current_activity(0), mouse_is_over(false),isCircle(false) {
   m_vertz.setPrimitiveType(sf::Quads);
   fontthing.loadFromFile("LinLibertine_DRah.ttf");
   zz.setString("");
@@ -22,27 +22,33 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   target.draw(m_vertz, states);
   //draw the cursor
   sf::RectangleShape r(sf::Vector2f(csize, csize));
+  r.setOrigin(this->getOrigin());
   r.setFillColor(sf::Color(0, 0, 0, 0));
   r.setOutlineColor(sf::Color(255, 255, 0, 255));
   r.setOutlineThickness(1.0);
-  r.setOrigin(csize * cursor_x, csize * cursor_y);
+  r.move(csize * cursor_x, csize * cursor_y);
   //this is the x axis symmetry thing
   sf::RectangleShape xSym(sf::Vector2f(2, target.getSize().y));
-  xSym.setOrigin(csize * -xsym - csize / 2.0, target.getSize().y / 2);
+  xSym.setOrigin(getOrigin());
+  
+  xSym.move(csize * xsym +csize/2 , 0);
   xSym.setFillColor(sf::Color(0, 255, 0, 255));
   //this is the y axis symmetry thing
   sf::RectangleShape ySym(sf::Vector2f(target.getSize().x, 2));
-  ySym.setOrigin(target.getSize().x / 2, -ysym * csize);
+  ySym.setOrigin(getOrigin());
+  ySym.move(0, ysym * csize+csize/2);
   ySym.setFillColor(sf::Color(255, 0, 0, 255));
   if (isDesignating) {
     sf::CircleShape start_desig(csize / 2);
     start_desig.setFillColor(sf::Color(255, 0, 255));
-    start_desig.setOrigin(m_start.x() * csize, m_start.y() * csize);
+    start_desig.setOrigin(getOrigin());
+    start_desig.move(m_start.x() * csize, m_start.y() * csize);
     target.draw(start_desig);
   }
   if (mouse_is_over) {
     sf::CircleShape q(csize / 2);
-    q.setOrigin((int)-mouse_place.x * csize, -mouse_place.y * csize);
+    q.setOrigin(getOrigin());
+    q.move((int)mouse_place.x * csize, mouse_place.y * csize);
     q.setFillColor(sf::Color(0, 0, 0, 0));
     q.setOutlineColor(sf::Color(255, 255, 255, 255));
     q.setOutlineThickness(1);
@@ -125,7 +131,7 @@ void Agony::long_desig() {
       for (int i = m_start[0]; i <= m_end[0]; i++)
         for (int j = m_start[1]; j <= m_end[1]; j++)
           for (int k = m_start[2]; k <= m_end[2]; k++) {
-            designate(-i, -j, k);
+            designate(i, j, k);
           }
       update();
     }
@@ -170,7 +176,7 @@ void Agony::designate(int x, int y, int z) {
 }
 void Agony::designate() {
   //std::cout << cursor_x << "," << cursor_y << std::endl;
-  designate(-cursor_x, -cursor_y, current_z);
+  designate(cursor_x, cursor_y, current_z);
   update();
 }
 void Agony::mouse_over(const sf::Vector2f &e) {
@@ -179,8 +185,8 @@ void Agony::mouse_over(const sf::Vector2f &e) {
   mouse_place.y = (int)std::round(e.y);
 }
 void Agony::long_desig(const sf::Vector2f &e) {
-  cursor_x = -(int)std::round(e.x);
-  cursor_y = -(int)std::round(e.y);
+  cursor_x = (int)std::round(e.x);
+  cursor_y = (int)std::round(e.y);
   long_desig();
 }
 void Agony::increase_activity() {
@@ -206,17 +212,17 @@ void Agony::update_text(){
   zz.setString(a);
 }
 void Agony::add_x_symmetry_at_cursor() {
-  if (xsym != -cursor_x || !m_x_sym_on) {
+  if (xsym != cursor_x || !m_x_sym_on) {
     m_xsym = make_Reflection(cursor_x, 1, 1);
-    xsym = -cursor_x;
+    xsym = cursor_x;
     m_x_sym_on = true;
   } else {
     m_x_sym_on = false;
   }
 }
 void Agony::add_y_symmetry_at_cursor() {
-  if (ysym != -cursor_y || !m_y_sym_on) {
-    ysym = -cursor_y;
+  if (ysym != cursor_y || !m_y_sym_on) {
+    ysym = cursor_y;
     m_y_sym_on = true;
   } else {
     m_y_sym_on = false;
@@ -227,7 +233,7 @@ void Agony::set_thing(int x, int y, int z) {
   update();
 }
 void Agony::erase_position() {
-  Eigen::Vector3d e(-cursor_x, -cursor_y, current_z);
+  Eigen::Vector3d e(cursor_x, cursor_y, current_z);
   allowed.erase(e);
 }
 std::tuple<int, int, int, int, int, int> Agony::getBoundaries() const {
@@ -296,10 +302,16 @@ void Agony::draw_circle() {
         float v = ((x - hx) * (x - hx)) / (r * r) +
                   ((y - hy) * (y - hy)) / (r * r);
         if (v <= 1) {
-          designate(-x, -y, z);
+          designate(x, y, z);
         }
       }
     }
   }
   update();
+}
+void Agony::move_over(int x,int y){
+  auto g=getOrigin();
+  g.x/=csize;
+  g.y/=csize;
+  setOrigin(g.x*csize+x*csize, g.y*csize+y*csize);
 }

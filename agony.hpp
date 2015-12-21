@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 #include <tuple>
-#include "ReflectionMatrix.hpp"
+#include "TransformationMatrix.hpp"
 namespace std {
 template <>
 struct less<Eigen::Vector3d> {
@@ -37,6 +37,7 @@ public:
   void increment_cursor_y() { cursor_y++; }
   void decrement_cursor_x() { cursor_x--; }
   void decrement_cursor_y() { cursor_y--; }
+  void move_over(int x,int y);
   void add_y_symmetry_at_cursor();
   void add_x_symmetry_at_cursor() ;
   void increase_activity() ;
@@ -51,6 +52,7 @@ public:
   void long_desig();
   void erase_position();
   void write_file_output(const std::string& output_name)const;
+  std::string getStatus()const;
 private:
   virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
   void update() ;
