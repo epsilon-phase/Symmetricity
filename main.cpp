@@ -48,12 +48,12 @@ int main() {
       }
       if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == 1) {
-
           menumode = !menumode;
           continue;
         }
         if (menumode) {
           menustuff.onclick(r.mapPixelToCoords(sf::Mouse::getPosition(r)));
+          
         } else {
           sf::Vector2i g = sf::Mouse::getPosition(r);
           auto q = r.mapPixelToCoords(g);
