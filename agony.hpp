@@ -59,6 +59,7 @@ public:
   void write_file_output(const std::string& output_name)const;
   std::string getStatus()const;
   void set_designation_type(int i);
+  void setActivityCallback(std::function<void(int)> a);
 private:
   virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
   void update() ;
@@ -84,5 +85,6 @@ private:
   ///Radial symmetry location
   int r_sym_x,r_sym_y;
   bool m_radial;
+  std::function<void(int)> on_designation_change;
 };
 #endif

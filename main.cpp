@@ -10,16 +10,22 @@ struct point;
 using namespace std;
 int main() {
   sf::RenderWindow r(sf::VideoMode(520, 256), "Symmetricity");
-  sf::RenderWindow menu(sf::VideoMode(250,250),"menu");
+  sf::RenderWindow menu(sf::VideoMode(250, 250), "menu");
   Agony e;
   sf::View q;
   q.setSize(520, 256);
   q.setCenter(0, 0);
   r.setView(q);
   Menu menustuff;
-  menustuff.addItem("dig",[&e](){
+  e.setActivityCallback([&menustuff](int a){menustuff.set_selected_item(a);});
+  menustuff.addItem("Dig", [&e]() {
     e.set_designation_type(0);
   });
+  menustuff.addItem("Up/Down staircase", [&e]() {e.set_designation_type(1); });
+  menustuff.addItem("Down staircase", [&e]() {e.set_designation_type(2); });
+  menustuff.addItem("Up staircase", [&e]() {e.set_designation_type(3); });
+  menustuff.addItem("Remove Designation", [&e]() {e.set_designation_type(4); });
+
   /*e.set_thing(1, 1, 0);
   e.set_thing(1, 2, 0);
   e.set_thing(1, 1, -1);
@@ -116,10 +122,10 @@ int main() {
         }
       }
     }
-    while(menu.pollEvent(event)){
-      if(event.type==sf::Event::MouseButtonPressed){
-        auto q=sf::Mouse::getPosition(menu);
-        
+    while (menu.pollEvent(event)) {
+      if (event.type == sf::Event::MouseButtonPressed) {
+        auto q = sf::Mouse::getPosition(menu);
+
         menustuff.onclick(menu.mapPixelToCoords(q));
       }
     }

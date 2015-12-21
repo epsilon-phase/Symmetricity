@@ -232,6 +232,7 @@ void Agony::update_text(){
   }
   a+=":";
   a += designations[current_activity] == '\0' ? 'x' : designations[current_activity];
+  on_designation_change(current_activity);
   zz.setString(a);
 }
 void Agony::add_x_symmetry_at_cursor() {
@@ -349,4 +350,7 @@ void Agony::move_over(int x,int y){
 void Agony::set_designation_type(int i){
   current_activity=i;
   update_text();
+}
+void Agony::setActivityCallback(std::function<void(int)> a){
+  this->on_designation_change=a;
 }
