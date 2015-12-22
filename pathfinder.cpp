@@ -42,6 +42,7 @@ GraphAnalyzer::GraphAnalyzer(const Agony &ag) : ag(ag) {
 }
 
 void GraphAnalyzer::run_analysis(const std::string &filename) const {
+  std::map<Eigen::Vector3d,std::map<Eigen::Vector3d,double> > costs;
   //TODO write floyd-whatver algorithm to find the distances between all the points
   //Then write the statistics of each node and (max-path-length avg-path-length)
 }

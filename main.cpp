@@ -16,6 +16,12 @@ int main() {
   q.setSize(520, 256);
   q.setCenter(0, 0);
   r.setView(q);
+  bool enter_text = false;
+  string text;
+  sf::Text save_file_display;
+  sf::Font font;
+  font.loadFromFile("LinBiolinum_RIah.ttf");
+  save_file_display.setFont(font);
   Menu menustuff;
   e.setActivityCallback([&menustuff](int a) {menustuff.set_selected_item(a); });
   menustuff.addItem("Dig", [&e]() {
@@ -37,10 +43,13 @@ int main() {
         r.close();
       if (event.type == sf::Event::Resized) {
         q.setSize(r.getSize().x, r.getSize().y);
+
         r.setView(q);
+        menustuff.setOrigin(q.getSize().x / 2, 0);
       }
       if (event.type == sf::Event::MouseMoved) {
         sf::Vector2i g = sf::Mouse::getPosition(r);
+
         auto q = r.mapPixelToCoords(g);
         q.x /= 10;
         q.y /= 10;
@@ -51,10 +60,7 @@ int main() {
           menumode = !menumode;
           continue;
         }
-        if (menumode) {
-          menustuff.onclick(r.mapPixelToCoords(sf::Mouse::getPosition(r)));
-          
-        } else {
+        if (!menumode || !menustuff.onclick(r.mapPixelToCoords(sf::Mouse::getPosition(r)))) {
           sf::Vector2i g = sf::Mouse::getPosition(r);
           auto q = r.mapPixelToCoords(g);
           q.x /= 10;
@@ -122,20 +128,35 @@ int main() {
           e.add_radial_symmetry_at_cursor();
           break;
         case sf::Keyboard::Return:
-          if (event.key.shift)
-            e.set_circle();
-          e.long_desig();
+          if (enter_text) {
+            e.write_file_output(text);
+            enter_text = false;
+          } else {
+            if (event.key.shift)
+              e.set_circle();
+            e.long_desig();
+          }
           break;
-        case sf::Keyboard::F5: //TODO Write a method to select a file to write to.
-          e.write_file_output("output.csv");
+        case sf::Keyboard::F5: 
+          if (enter_text)
+            e.write_file_output(text);
+          enter_text = !enter_text;
         }
+        
       }
+      if (event.type == event.TextEntered)
+        if (enter_text) {
+          text += static_cast<char>(event.text.unicode);
+        }
     }
+
     r.clear();
-    if (!menumode) {
-      r.draw(e);
-    } else {
+    r.draw(e);
+    if (menumode)
       r.draw(menustuff);
+    if (enter_text) {
+      save_file_display.setString("Saving to:" + text);
+      r.draw(save_file_display);
     }
     r.display();
   }
