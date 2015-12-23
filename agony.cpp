@@ -374,6 +374,14 @@ void Agony::serialize(const std::string &f) const {
   e.close();
 }
 void Agony::deserialize(const std::string &f) {
+  allowed.clear();
+  ifstream q(f);
+  double x,y,z;
+  char c;
+  while(q>>x>>y>>z>>c){
+    allowed[Eigen::Vector3d(x,y,z)]=c;
+  }
+  update();
 }
 void Agony::handle_entry(sf::Event::TextEvent a) {
   if (is_file_entry) {
