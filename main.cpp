@@ -56,12 +56,14 @@ int main() {
         e.mouse_over(q); //tells the thing to display a circle where the mouse is over.
       }
       if (event.type == sf::Event::MouseButtonPressed) {
+        sf::Vector2i g = sf::Mouse::getPosition(r);
         if (event.mouseButton.button == 1) {
           menumode = !menumode;
           continue;
         }
-        if (!menumode || !menustuff.onclick(r.mapPixelToCoords(sf::Mouse::getPosition(r)))) {
-          sf::Vector2i g = sf::Mouse::getPosition(r);
+        if (menumode&&menustuff.onclick(r.mapPixelToCoords(g,q))){
+          std::cout<<"clicked menu"<<endl;
+        } else {
           auto q = r.mapPixelToCoords(g);
           q.x /= 10;
           q.y /= 10;
@@ -69,95 +71,16 @@ int main() {
         }
       }
       if (event.type == sf::Event::KeyPressed) {
-        int times = 1;
-        if (event.key.shift)
-          times = 10;
-        switch (event.key.code) {
-        case sf::Keyboard::Right:
-          if (event.key.control) {
-            e.move_over(1, 0);
-          } else
-            for (int i = 0; i < times; i++)
-              e.increment_cursor_x();
-          break;
-        case sf::Keyboard::Left:
-          if (event.key.control)
-            e.move_over(-1, 0);
-          else
-            for (int i = 0; i < times; i++)
-              e.decrement_cursor_x();
-          break;
-        case sf::Keyboard::Up:
-          if (event.key.control)
-            e.move_over(0, -1);
-          else
-            for (int i = 0; i < times; i++)
-              e.decrement_cursor_y();
-          break;
-        case sf::Keyboard::Down:
-          if (event.key.control)
-            e.move_over(0, 1);
-          else
-            for (int i = 0; i < times; i++)
-              e.increment_cursor_y();
-          break;
-        case sf::Keyboard::Period:
-          e.increase_z();
-          break;
-        case sf::Keyboard::Comma:
-          e.decrease_z();
-          break;
-        case sf::Keyboard::X:
-          e.add_x_symmetry_at_cursor();
-          break;
-        case sf::Keyboard::Y:
-          e.add_y_symmetry_at_cursor();
-          break;
-        case sf::Keyboard::Subtract:
-        case sf::Keyboard::Dash:
-          e.decrease_activity();
-          break;
-        case sf::Keyboard::Add:
-        case sf::Keyboard::Equal:
-          e.increase_activity();
-          break;
-        case sf::Keyboard::Space:
-          e.designate();
-          break;
-        case sf::Keyboard::R:
-          e.add_radial_symmetry_at_cursor();
-          break;
-        case sf::Keyboard::Return:
-          if (enter_text) {
-            e.write_file_output(text);
-            enter_text = false;
-          } else {
-            if (event.key.shift)
-              e.set_circle();
-            e.long_desig();
-          }
-          break;
-        case sf::Keyboard::F5: 
-          if (enter_text)
-            e.write_file_output(text);
-          enter_text = !enter_text;
-        }
-        
+        e.handle_keyboard(event.key);
       }
       if (event.type == event.TextEntered)
-        if (enter_text) {
-          text += static_cast<char>(event.text.unicode);
-        }
+        e.handle_entry(event.text);
     }
 
     r.clear();
     r.draw(e);
     if (menumode)
       r.draw(menustuff);
-    if (enter_text) {
-      save_file_display.setString("Saving to:" + text);
-      r.draw(save_file_display);
-    }
     r.display();
   }
   return 0;

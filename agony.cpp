@@ -4,8 +4,9 @@ using namespace std;
 Agony::Agony() : csize(10), cursor_x(0),
                  cursor_y(0), current_z(0),
                  m_y_sym_on(false), m_x_sym_on(false),
-                 isDesignating(false), current_activity(0), mouse_is_over(false),isCircle(false),
-                 m_radial(false){
+                 isDesignating(false), current_activity(0),
+                 mouse_is_over(false), isCircle(false),
+                 m_radial(false) {
   m_vertz.setPrimitiveType(sf::Quads);
   fontthing.loadFromFile("LinLibertine_DRah.ttf");
   zz.setString("");
@@ -31,19 +32,19 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   //this is the x axis symmetry thing
   sf::RectangleShape xSym(sf::Vector2f(2, target.getSize().y));
   xSym.setOrigin(getOrigin());
-  
-  xSym.move(csize * xsym +csize/2 , 0);
+
+  xSym.move(csize * xsym + csize / 2, int(target.getSize().y) / -2);
   xSym.setFillColor(sf::Color(0, 255, 0, 255));
   //this is the y axis symmetry thing
   sf::RectangleShape ySym(sf::Vector2f(target.getSize().x, 2));
   ySym.setOrigin(getOrigin());
-  ySym.move(0, ysym * csize+csize/2);
+  ySym.move(target.getView().getSize().x / -2, ysym * csize + csize / 2);
   ySym.setFillColor(sf::Color(255, 0, 0, 255));
-  sf::CircleShape rsym(csize/2);
+  sf::CircleShape rsym(csize / 2);
   rsym.setOrigin(getOrigin());
-  rsym.move(r_sym_x*csize,csize*r_sym_y);
-  rsym.setFillColor(sf::Color(255,200,0,150));
-  rsym.setOutlineColor(sf::Color(0,0,255,255));
+  rsym.move(r_sym_x * csize, csize * r_sym_y);
+  rsym.setFillColor(sf::Color(255, 200, 0, 150));
+  rsym.setOutlineColor(sf::Color(0, 0, 255, 255));
   rsym.setOutlineThickness(1);
   if (isDesignating) {
     sf::CircleShape start_desig(csize / 2);
@@ -65,7 +66,7 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     target.draw(ySym);
   if (m_x_sym_on)
     target.draw(xSym);
-  if(m_radial)
+  if (m_radial)
     target.draw(rsym);
   target.draw(r);
   zz.setOrigin(target.getSize().x / 2, target.getSize().y / 2);
@@ -81,10 +82,7 @@ void Agony::update() {
       } else {
         torem.push_back(i.first);
       }
-    }else{
-      if(std::round(i.first.z()) > current_z)
-        break;
-    }
+    } 
   }
   for (auto i : torem)
     allowed.erase(i);
@@ -178,15 +176,14 @@ void Agony::insert_y_symmetry(const Eigen::Vector3d &c) {
       f = Eigen::Vector3d(c.x(), (ysym)-diff, c.z());
     }
     allowed[f] = designations[current_activity];
-    
   }
 }
-void Agony::insert_radial_symmetry(const Eigen::Vector3d &c){
-  if(m_radial){
-    int diff_x=c.x()-r_sym_x;
-    int diff_y=c.y()-r_sym_y;
-    auto f=Eigen::Vector3d(r_sym_x-diff_x,r_sym_y-diff_y,c.z());
-    allowed[f]=designations[current_activity];
+void Agony::insert_radial_symmetry(const Eigen::Vector3d &c) {
+  if (m_radial) {
+    int diff_x = c.x() - r_sym_x;
+    int diff_y = c.y() - r_sym_y;
+    auto f = Eigen::Vector3d(r_sym_x - diff_x, r_sym_y - diff_y, c.z());
+    allowed[f] = designations[current_activity];
     insert_x_symmetry(f);
   }
   insert_x_symmetry(c);
@@ -225,14 +222,27 @@ void Agony::decrease_activity() {
   current_activity %= 5;
   update_text();
 }
-void Agony::update_text(){
-  std::string a = "Designating";
-  if(isCircle){
-    a+="(Circle)";
+void Agony::update_text() {
+  std::string a;
+  if (!is_file_entry) {
+    a = "Designating";
+    if (isCircle) {
+      a += "(Circle)";
+    }
+    a += ":";
+    a += designations[current_activity] == '\0' ? 'x' : designations[current_activity];
+    on_designation_change(current_activity);
+  } else {
+    if (is_saving) {
+      if (serializing)
+        a = "Save to:";
+      else
+        a = "Export to:";
+    } else {
+      a = "Load from:";
+    }
+    a += this->save_prompt;
   }
-  a+=":";
-  a += designations[current_activity] == '\0' ? 'x' : designations[current_activity];
-  on_designation_change(current_activity);
   zz.setString(a);
 }
 void Agony::add_x_symmetry_at_cursor() {
@@ -252,13 +262,13 @@ void Agony::add_y_symmetry_at_cursor() {
     m_y_sym_on = false;
   }
 }
-void Agony::add_radial_symmetry_at_cursor(){
-  if(this->m_radial||(r_sym_x!=cursor_x&&r_sym_y!=cursor_y)){
-    m_radial=true;
-    r_sym_x=cursor_x;
-    r_sym_y=cursor_y;
-  }else
-    m_radial=false;
+void Agony::add_radial_symmetry_at_cursor() {
+  if (this->m_radial || (r_sym_x != cursor_x && r_sym_y != cursor_y)) {
+    m_radial = true;
+    r_sym_x = cursor_x;
+    r_sym_y = cursor_y;
+  } else
+    m_radial = false;
 }
 void Agony::set_thing(int x, int y, int z) {
   allowed.insert(std::pair<Eigen::Vector3d, int>(Eigen::Vector3d(x, y, z), designations[current_activity]));
@@ -315,22 +325,22 @@ void Agony::set_circle() {
   update_text();
 }
 float distance(const Eigen::Vector3d &a, const Eigen::Vector3d &b) {
-  auto c = Eigen::Vector3d(a.x()-b.x(),a.y()-b.y(),a.z()-b.z());
+  auto c = Eigen::Vector3d(a.x() - b.x(), a.y() - b.y(), a.z() - b.z());
   return std::sqrt(c.x() * c.x() + c.y() * c.y() + c.z() * c.z());
 }
 void Agony::draw_circle() {
-  float xx=(m_start[0]-m_end[0]),
-       yy=(m_start[1]-m_end[1]);
-       
-  int r=sqrt(xx*xx+yy*yy);
+  float xx = (m_start[0] - m_end[0]),
+        yy = (m_start[1] - m_end[1]);
+
+  int r = sqrt(xx * xx + yy * yy);
   //std::cout<<r<<endl;
-  float hy=m_start[1];
-  float hx=m_start[0];
-  std::cout<<"h="<<hx<<",k="<<hy<<endl;
-  for (int x = hx-r-1; x <= hx+r+1; x++) {
-    for (int y = hy-r-1; y <= hy+r+1; y++) {
+  float hy = m_start[1];
+  float hx = m_start[0];
+  std::cout << "h=" << hx << ",k=" << hy << endl;
+  for (int x = hx - r - 1; x <= hx + r + 1; x++) {
+    for (int y = hy - r - 1; y <= hy + r + 1; y++) {
       for (int z = m_start[2]; z <= m_end[2]; z++) {
-        cout<<x<<","<<y<<endl;
+        cout << x << "," << y << endl;
         float v = ((x - hx) * (x - hx)) / (r * r) +
                   ((y - hy) * (y - hy)) / (r * r);
         if (v <= 1) {
@@ -341,16 +351,166 @@ void Agony::draw_circle() {
   }
   update();
 }
-void Agony::move_over(int x,int y){
-  auto g=getOrigin();
-  g.x/=csize;
-  g.y/=csize;
-  setOrigin(g.x*csize+x*csize, g.y*csize+y*csize);
+void Agony::move_over(int x, int y) {
+  auto g = getOrigin();
+  g.x /= csize;
+  g.y /= csize;
+  setOrigin(g.x * csize + x * csize, g.y * csize + y * csize);
 }
-void Agony::set_designation_type(int i){
-  current_activity=i;
+void Agony::set_designation_type(int i) {
+  current_activity = i;
   update_text();
 }
-void Agony::setActivityCallback(std::function<void(int)> a){
-  this->on_designation_change=a;
+void Agony::setActivityCallback(std::function<void(int)> a) {
+  this->on_designation_change = a;
+}
+void Agony::serialize(const std::string &f) const {
+  ofstream e(f);
+  for (auto i : allowed) {
+    auto z = i.first;
+    auto j = i.second;
+    e << z.x() << " " << z.y() << " " << z.z() << " " << j << endl;
+  }
+  e.close();
+}
+void Agony::deserialize(const std::string &f) {
+}
+void Agony::handle_entry(sf::Event::TextEvent a) {
+  if (is_file_entry) {
+    save_prompt += static_cast<char>(a.unicode);
+    std::cout << save_prompt << endl;
+  }
+  update_text();
+}
+void Agony::finish_entry() {
+  if (is_file_entry) {
+    if (!is_saving) {
+      deserialize(this->save_prompt);
+    } else {
+      if (serializing)
+        serialize(save_prompt);
+      else
+        write_file_output(save_prompt);
+    }
+    previous_save=save_prompt;
+  }
+  is_file_entry = false;
+  update_text();
+}
+void Agony::abort_entry() {
+  is_file_entry = false;
+  is_saving = false;
+  serializing = false;
+  update_text();
+}
+void Agony::start_save() {
+  save_prompt = "";
+  is_file_entry = true;
+  is_saving = true;
+}
+void Agony::start_serialize() {
+  save_prompt = "";
+  is_file_entry = true;
+  is_saving = true;
+  serializing = true;
+  std::cout << "write" << endl;
+}
+void Agony::start_load() {
+  save_prompt = "";
+  is_file_entry = true;
+  is_saving = false;
+  serializing = true;
+}
+void Agony::handle_keyboard(sf::Event::KeyEvent a) {
+  if (is_file_entry && !(a.code == sf::Keyboard::Escape||a.code==sf::Keyboard::Return)){
+    return;
+  }
+  int times = 1;
+  if (a.shift)
+    times = 10;
+  switch (a.code) {
+  case sf::Keyboard::Escape:
+    abort_entry();
+    break;
+  case sf::Keyboard::Right:
+    if (a.control) {
+      move_over(1, 0);
+    } else
+      for (int i = 0; i < times; i++)
+        increment_cursor_x();
+    break;
+  case sf::Keyboard::Left:
+    if (a.control)
+      move_over(-1, 0);
+    else
+      for (int i = 0; i < times; i++)
+        decrement_cursor_x();
+    break;
+  case sf::Keyboard::Up:
+    if (a.control)
+      move_over(0, -1);
+    else
+      for (int i = 0; i < times; i++)
+        decrement_cursor_y();
+    break;
+  case sf::Keyboard::Down:
+    if (a.control)
+      move_over(0, 1);
+    else
+      for (int i = 0; i < times; i++)
+        increment_cursor_y();
+    break;
+  case sf::Keyboard::Period:
+    increase_z();
+    break;
+  case sf::Keyboard::Comma:
+    decrease_z();
+    break;
+  case sf::Keyboard::X:
+    add_x_symmetry_at_cursor();
+    break;
+  case sf::Keyboard::Y:
+    add_y_symmetry_at_cursor();
+    break;
+  case sf::Keyboard::Subtract:
+  case sf::Keyboard::Dash:
+    decrease_activity();
+    break;
+  case sf::Keyboard::Add:
+  case sf::Keyboard::Equal:
+    increase_activity();
+    break;
+  case sf::Keyboard::Space:
+    designate();
+    break;
+  case sf::Keyboard::R:
+    add_radial_symmetry_at_cursor();
+    break;
+  case sf::Keyboard::Return:
+    if (is_entry()) {
+      finish_entry();
+      cout<<"Ended"<<endl;
+    } else {
+      if (a.shift)
+        set_circle();
+      long_desig();
+    }
+    break;
+  case sf::Keyboard::F5:
+    if(is_entry())
+      finish_entry();
+    if (a.shift)
+      start_save();
+    else
+      start_serialize();
+    
+    break;
+  case sf::Keyboard::F6:
+    start_load();
+    break;
+  case sf::Keyboard::F7:
+    GraphAnalyzer q(*this);
+    q.run_analysis(previous_save);
+    break;
+  }
 }

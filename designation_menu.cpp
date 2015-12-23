@@ -4,6 +4,7 @@ bool Menu::onclick(const sf::Vector2f &coords){
   for(int i=0;i<texts.size();i++)
     if(texts[i].getGlobalBounds().contains(coords)){
       clickfuncs[i]();
+      std::cout<<texts[i].getString().toAnsiString()<<std::endl;
       return true;
     }
     return false;
