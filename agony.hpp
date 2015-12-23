@@ -102,5 +102,7 @@ private:
   bool is_file_entry = false;
   bool line_start=false;
   mutable GraphAnalyzer running;
+  mutable int max_path_ticks_per_frame=1;
+  mutable bool runtime_tick=false;
 };
 #endif

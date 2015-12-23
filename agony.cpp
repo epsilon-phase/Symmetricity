@@ -1,12 +1,14 @@
 #include "agony.hpp"
 #include <fstream>
+#include <chrono>
+#include <cmath>
 using namespace std;
 Agony::Agony() : csize(10), cursor_x(0),
                  cursor_y(0), current_z(0),
                  m_y_sym_on(false), m_x_sym_on(false),
                  isDesignating(false), current_activity(0),
                  mouse_is_over(false), isCircle(false),
-                 m_radial(false),running(*this) {
+                 m_radial(false), running(*this) {
   m_vertz.setPrimitiveType(sf::Quads);
   fontthing.loadFromFile("LinLibertine_DRah.ttf");
   zz.setString("");
@@ -69,13 +71,27 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   if (m_radial)
     target.draw(rsym);
   target.draw(r);
-  if(!running.is_done()){
-    running.run_step();
-     zz.Text::setString(std::to_string(running.get_progress()));
+  if (!running.is_done()) {
+    if (!running.is_paused()) {
+      if (!runtime_tick) {
+        auto f = chrono::system_clock::now();
+        running.run_step();
+        auto g = chrono::system_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(g - f).count();
+        if(dur==0)
+          dur=1;
+        this->max_path_ticks_per_frame = max((int)10.0 / dur,1);
+        runtime_tick = true;
+      } else {
+        for (int i = 0; i < max_path_ticks_per_frame; i++) {
+          running.run_step();
+        }
+      }
+    }
+    zz.Text::setString(std::to_string(running.get_progress()) + (running.is_paused() ? "(paused)" : ""));
   }
   zz.setOrigin(target.getSize().x / 2, target.getSize().y / 2);
   target.draw(zz);
-
 }
 void Agony::update() {
   std::vector<Eigen::Vector3d> things;
@@ -87,7 +103,7 @@ void Agony::update() {
       } else {
         torem.push_back(i.first);
       }
-    } 
+    }
   }
   for (auto i : torem)
     allowed.erase(i);
@@ -381,10 +397,10 @@ void Agony::serialize(const std::string &f) const {
 void Agony::deserialize(const std::string &f) {
   allowed.clear();
   ifstream q(f);
-  double x,y,z;
+  double x, y, z;
   char c;
-  while(q>>x>>y>>z>>c){
-    allowed[Eigen::Vector3d(x,y,z)]=c;
+  while (q >> x >> y >> z >> c) {
+    allowed[Eigen::Vector3d(x, y, z)] = c;
   }
   update();
 }
@@ -405,7 +421,7 @@ void Agony::finish_entry() {
       else
         write_file_output(save_prompt);
     }
-    previous_save=save_prompt;
+    previous_save = save_prompt;
   }
   is_file_entry = false;
   update_text();
@@ -435,7 +451,7 @@ void Agony::start_load() {
   serializing = true;
 }
 void Agony::handle_keyboard(sf::Event::KeyEvent a) {
-  if (is_file_entry && !(a.code == sf::Keyboard::Escape||a.code==sf::Keyboard::Return)){
+  if (is_file_entry && !(a.code == sf::Keyboard::Escape || a.code == sf::Keyboard::Return)) {
     return;
   }
   int times = 1;
@@ -502,7 +518,7 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
   case sf::Keyboard::Return:
     if (is_entry()) {
       finish_entry();
-      cout<<"Ended"<<endl;
+      cout << "Ended" << endl;
     } else {
       if (a.shift)
         set_circle();
@@ -510,20 +526,23 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     }
     break;
   case sf::Keyboard::F5:
-    if(is_entry())
+    if (is_entry())
       finish_entry();
     if (a.shift)
       start_save();
     else
       start_serialize();
-    
+
     break;
   case sf::Keyboard::F6:
     start_load();
     break;
   case sf::Keyboard::F7:
-    running.run_analysis(this->previous_save);
-    
+    if (!running.is_set_up())
+      running.run_analysis(this->previous_save);
+    else {
+      running.toggle_pause();
+    }
     break;
   }
 }

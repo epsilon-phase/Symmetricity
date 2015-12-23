@@ -7,7 +7,7 @@
 using namespace std;
 map<char, vector<Eigen::Vector3d>> pathables;
 GraphAnalyzer::GraphAnalyzer(const Agony &ag) : ag(ag) {
-  m_done=true;
+  m_done = true;
   if (pathables.size() == 0) {
     pathables['d'].push_back(Eigen::Vector3d(1, 0, 0));
     pathables['d'].push_back(Eigen::Vector3d(-1, 0, 0));
@@ -45,15 +45,16 @@ GraphAnalyzer::GraphAnalyzer(const Agony &ag) : ag(ag) {
     pathables['i'].push_back(Eigen::Vector3d(0, 0, 1));
   }
 }
-void GraphAnalyzer::run_analysis(const std::string &filename){
-  this->filename=filename;
+void GraphAnalyzer::run_analysis(const std::string &filename) {
+  this->filename = filename;
   this->costs.clear();
-  m_done=false;
-  this->k=ag.allowed.begin();
+  m_done = false;
+  this->k = ag.allowed.begin();
+  this->i=ag.allowed.begin();
   set_up();
 }
 void GraphAnalyzer::set_up() {
-  top_cycles=0;
+  top_cycles = 0;
   auto q = ag.allowed;
   for (auto j : q)
     for (auto i : q)
@@ -70,26 +71,29 @@ void GraphAnalyzer::set_up() {
         costs[i.first][current] = 1;
     }
   }
+  m_set_up = true;
 }
 void GraphAnalyzer::run_step() {
 
   auto q = ag.allowed;
   if (k != ag.allowed.end()) {
-    for (auto i : q) {
-      for (auto j : q) {
-        if (costs[i.first][j.first] > costs[i.first][k->first] + costs[k->first][j.first])
-          costs[i.first][j.first] = costs[i.first][k->first] + costs[k->first][j.first];
-      }
+    for (auto j : q) {
+      if (costs[i->first][j.first] > costs[i->first][k->first] + costs[k->first][j.first])
+        costs[i->first][j.first] = costs[i->first][k->first] + costs[k->first][j.first];
     }
-    k++;
-    top_cycles++;
+    i++;
+    if (i == ag.allowed.end()) {
+      i=ag.allowed.begin();
+      k++;
+      top_cycles++;
+    }
   } else {
     this->m_done = true;
     output();
   }
 }
-int GraphAnalyzer::get_progress()const{
-  return top_cycles/double(ag.allowed.size())*100;
+int GraphAnalyzer::get_progress() const {
+  return top_cycles / double(ag.allowed.size()) * 100;
 }
 void GraphAnalyzer::output() {
   ofstream output(filename);
@@ -109,4 +113,5 @@ void GraphAnalyzer::output() {
   write_ppm_to_file(filename, maxes,
                     c);
   costs.clear();
+  m_set_up = false;
 }
