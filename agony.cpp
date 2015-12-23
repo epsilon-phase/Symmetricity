@@ -469,10 +469,10 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
         increment_cursor_y();
     break;
   case sf::Keyboard::Period:
-    increase_z();
+    decrease_z();
     break;
   case sf::Keyboard::Comma:
-    decrease_z();
+    increase_z();
     break;
   case sf::Keyboard::X:
     add_x_symmetry_at_cursor();
