@@ -320,7 +320,7 @@ void Agony::write_file_output(const std::string &output_name) const {
       }
       out << "#" << endl;
     }
-    if (z > std::get<2>(boundaries)-1 )
+    if (z > std::get<2>(boundaries))
       out << "#>" << endl;
   }
   out.close();
