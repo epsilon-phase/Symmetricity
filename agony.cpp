@@ -6,7 +6,7 @@ Agony::Agony() : csize(10), cursor_x(0),
                  m_y_sym_on(false), m_x_sym_on(false),
                  isDesignating(false), current_activity(0),
                  mouse_is_over(false), isCircle(false),
-                 m_radial(false) {
+                 m_radial(false),running(*this) {
   m_vertz.setPrimitiveType(sf::Quads);
   fontthing.loadFromFile("LinLibertine_DRah.ttf");
   zz.setString("");
@@ -69,8 +69,13 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   if (m_radial)
     target.draw(rsym);
   target.draw(r);
+  if(!running.is_done()){
+    running.run_step();
+     zz.Text::setString(std::to_string(running.get_progress()));
+  }
   zz.setOrigin(target.getSize().x / 2, target.getSize().y / 2);
   target.draw(zz);
+
 }
 void Agony::update() {
   std::vector<Eigen::Vector3d> things;
@@ -315,7 +320,7 @@ void Agony::write_file_output(const std::string &output_name) const {
       }
       out << "#" << endl;
     }
-    if (z > std::get<2>(boundaries) + 1)
+    if (z > std::get<2>(boundaries)-1 )
       out << "#>" << endl;
   }
   out.close();
@@ -517,8 +522,8 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     start_load();
     break;
   case sf::Keyboard::F7:
-    GraphAnalyzer q(*this);
-    q.run_analysis(previous_save);
+    running.run_analysis(this->previous_save);
+    
     break;
   }
 }

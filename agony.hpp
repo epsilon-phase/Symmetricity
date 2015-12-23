@@ -5,30 +5,15 @@
 #include <set>
 //#include <map>
 #include <unordered_map>
-#include <Eigen/Dense>
+
 #include <cmath>
 #include <iostream>
 #include <string>
 #include <tuple>
 #include "TransformationMatrix.hpp"
+
 #include "pathfinder.hpp"
-#include "city.h"
-namespace std {
-template <>
-struct less<Eigen::Vector3d> {
-  bool operator()(const Eigen::Vector3d &a, const Eigen::Vector3d &b) const {
-    //return a[0] == b[0] ? (a[1] == b[1] ? (a[2] < b[2]) : a[1] < b[1]) : a[0] < b[0];
-    return a[2] == b[2] ? (a[0] == b[0] ? a[1] < b[1] : a[0] < b[0]) : a[2] < b[2];
-  }
-};
-template<> struct hash<Eigen::Vector3d> {
-  std::size_t operator()(const Eigen::Vector3d& a)const{
-    if(sizeof(std::size_t)==8){
-      return CityHash64((const char*)&a,sizeof(a));
-    }
-  }
-};
-}
+
 static const char designations[] = {'d', 'i', 'j', 'u', '\0'};
 class Agony : public sf::Drawable, public sf::Transformable {
 
@@ -116,6 +101,6 @@ private:
   bool is_saving = false;
   bool is_file_entry = false;
   bool line_start=false;
-  
+  mutable GraphAnalyzer running;
 };
 #endif
