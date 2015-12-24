@@ -80,7 +80,9 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
         auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(g - f).count();
         if(dur==0)
           dur=1;
-        this->max_path_ticks_per_frame = max((int)10.0 / dur,1);
+        if(dur>=10)
+          dur=10;
+        this->max_path_ticks_per_frame = (int)10.0/dur;
         runtime_tick = true;
       } else {
         for (int i = 0; i < max_path_ticks_per_frame; i++) {
@@ -532,7 +534,10 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
       start_save();
     else
       start_serialize();
-
+    break;
+  case sf::Keyboard::E:
+    if(save_prompt.size()!=0)
+      write_file_output(save_prompt+".csv");
     break;
   case sf::Keyboard::F6:
     start_load();
@@ -543,6 +548,11 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     else {
       running.toggle_pause();
     }
+    break;
+  case sf::Keyboard::F8:
+    if(running.is_set_up()&&!running.is_done())
+      cout<<running.get_top_cycle()<<" cycles"<<endl;
+    cout<<allowed.size()<<endl;
     break;
   }
 }
