@@ -15,7 +15,10 @@ public:
   int get_progress()const;
   void toggle_pause(){m_paused=!m_paused;}
   bool is_set_up()const{return m_set_up;}
+  int get_top_cycle()const{return top_cycles;}
+  void stop();
 private:
+  void bfs(const Eigen::Vector3d& start);
   void set_up();
   void output();
   const Agony& ag;

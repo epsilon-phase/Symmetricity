@@ -2,7 +2,9 @@
 #include "agony.hpp"
 #include <limits>
 #include <fstream>
+#include <queue>
 #include "ppm.hpp"
+#include <unordered_set>
 
 using namespace std;
 map<char, vector<Eigen::Vector3d>> pathables;
@@ -53,40 +55,57 @@ void GraphAnalyzer::run_analysis(const std::string &filename) {
   this->i=ag.allowed.begin();
   set_up();
 }
+void GraphAnalyzer::bfs(const Eigen::Vector3d& start){
+  int ccost=0;
+  int nodes_to_go=1;
+  int next_level=0;
+  queue<Eigen::Vector3d> q;
+  q.push(start);
+  costs[start][start]=0;
+  unordered_set<Eigen::Vector3d> visited;
+  while(!q.empty()){
+    auto f=q.front();
+    std::cout<<ccost<<endl;
+    q.pop();
+    nodes_to_go--;
+    auto pf=pathables[this->ag.allowed.find(f)->second];
+    for(int z=0;z<pf.size();z++){
+      auto zz=Eigen::Vector3d(pf[z][0]+f[0],pf[z][1]+f[1],pf[z][2]+f[2]);
+      if(ag.allowed.end()!=ag.allowed.find(zz)&&visited.find(zz)==visited.end()){
+        costs[start][zz]=ccost;
+        q.push(zz);
+        next_level++;
+        visited.insert(zz);
+      }
+    }
+    if(nodes_to_go<=0){
+      nodes_to_go=next_level;
+      next_level=0;
+      
+      ccost++;
+    }
+  }
+}
 void GraphAnalyzer::set_up() {
   top_cycles = 0;
-  auto q = ag.allowed;
-  for (auto j : q)
-    for (auto i : q)
-      costs[j.first][i.first] = numeric_limits<double>::infinity();
-  for (auto i : q) { //the distance between all vertices and themselves are zero.
-    auto c = i.first;
-    costs[c][c] = 0;
-  }
-  for (auto i : q) { //set all adjacent things to 1
+/*  for (auto i : q) { //set all adjacent things to 1
     auto z = i.first;
     for (auto v : pathables[i.second]) { //TODO fix stair connections to ensure that they are mutually connective.
       auto current = Eigen::Vector3d(z[0] + v[0], z[1] + v[1], z[2] + v[2]);
       if (q.find(current) != q.end())
         costs[i.first][current] = 1;
     }
-  }
+  }*/
+  
   m_set_up = true;
 }
 void GraphAnalyzer::run_step() {
 
   auto q = ag.allowed;
   if (k != ag.allowed.end()) {
-    for (auto j : q) {
-      if (costs[i->first][j.first] > costs[i->first][k->first] + costs[k->first][j.first])
-        costs[i->first][j.first] = costs[i->first][k->first] + costs[k->first][j.first];
-    }
-    i++;
-    if (i == ag.allowed.end()) {
-      i=ag.allowed.begin();
-      k++;
-      top_cycles++;
-    }
+    bfs(k->first);
+    k++;
+    top_cycles++;
   } else {
     this->m_done = true;
     output();
@@ -114,4 +133,12 @@ void GraphAnalyzer::output() {
                     c);
   costs.clear();
   m_set_up = false;
+}
+void GraphAnalyzer::stop(){
+  m_set_up=false;
+  m_done=false;
+  costs.clear();
+  k=ag.allowed.begin();
+  i=ag.allowed.begin();
+  
 }
