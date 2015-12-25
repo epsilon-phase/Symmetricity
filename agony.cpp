@@ -6,7 +6,7 @@ using namespace std;
 Agony::Agony() : csize(10), cursor_x(0),
                  cursor_y(0), current_z(0),
                  m_y_sym_on(false), m_x_sym_on(false),
-                 isDesignating(false), current_activity(0),
+                 isDesignating(false), current_desig(0),
                  mouse_is_over(false), isCircle(false),
                  m_radial(false), running(*this) {
   m_vertz.setPrimitiveType(sf::Quads);
@@ -15,7 +15,7 @@ Agony::Agony() : csize(10), cursor_x(0),
   zz.setFont(fontthing);
   zz.setColor(sf::Color(255, 200, 0));
   std::string a = "Designating:";
-  a += (designations[current_activity] == '\0' ? 'x' : designations[current_activity]);
+  a += (designations[current_desig] == '\0' ? 'x' : designations[current_desig]);
   zz.setString(a);
 }
 Agony::~Agony() {}
@@ -96,32 +96,42 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   target.draw(zz);
 }
 void Agony::update() {
-  std::vector<Eigen::Vector3i> things;
-  std::vector<Eigen::Vector3i> torem;
+  std::vector<Eigen::Vector3i> designations;
+  std::vector<Eigen::Vector3i> buildings;
+  std::vector<Eigen::Vector3i> torem_desig, torem_build;
   for (auto i : allowed) {
-    if (std::round(i.first.z()) == current_z) {
+    if (i.first.z() == current_z) {
       if (i.second != '\0') {
-        things.push_back(i.first);
+        if (builds.find(i.first) != builds.end()) {
+          if (builds[i.first] != "\0")
+            buildings.push_back(i.first);
+          else
+            torem_build.push_back(i.first);
+        }
+        designations.push_back(i.first);
       } else {
-        torem.push_back(i.first);
+        torem_desig.push_back(i.first);
       }
     }
   }
-  for (auto i : torem)
+  for (auto i : torem_desig)
     allowed.erase(i);
-  m_vertz.resize(things.size() * 4);
+  for(auto i:torem_build)
+    builds.erase(i);
+  m_vertz.resize(designations.size() * 4 + buildings.size() * 4);
 
   m_vertz.setPrimitiveType(sf::PrimitiveType::Quads);
-  for (int i = 0; i < things.size(); i++) {
+  for (int i = 0; i < designations.size(); i++) {
     sf::Vertex *current = &m_vertz[i * 4];
-    auto g = things[i];
+    auto g = designations[i];
 
     current[0].position = sf::Vector2f(g[0] * csize, g[1] * csize);
     current[1].position = sf::Vector2f((g[0] + 1) * csize, g[1] * csize);
     current[2].position = sf::Vector2f((1 + g[0]) * csize, (1 + g[1]) * csize);
     current[3].position = sf::Vector2f(g[0] * csize, (1 + g[1]) * csize);
+
     sf::Color curcol;
-    switch (allowed[things[i]]) {
+    switch (allowed[designations[i]]) {
     case 'd':
       curcol = sf::Color(255, 255, 255);
       break;
@@ -142,6 +152,20 @@ void Agony::update() {
     current[1].color = curcol;
     current[2].color = curcol;
     current[3].color = curcol;
+  }
+  int i = designations.size();
+  for (auto z : buildings) {
+    auto current = &m_vertz[(i + 1) * 4];
+    current[0].position = sf::Vector2f(z[0] * csize, z[1] * csize);
+    current[1].position = sf::Vector2f((z[0] + 0.5) * csize, z[1] * csize);
+    current[2].position = sf::Vector2f((.5 + z[0]) * csize, (0.5 + z[1]) * csize);
+    current[3].position = sf::Vector2f(z[0] * csize, (0.5 + z[1]) * csize);
+    sf::Color build_color = build_colors.find(builds.find(z)->second)->second;
+    current[0].color = build_color;
+    current[1].color = build_color;
+    current[2].color = build_color;
+    current[3].color = build_color;
+    i++;
   }
 }
 void Agony::long_desig() {
@@ -183,7 +207,10 @@ void Agony::insert_x_symmetry(const Eigen::Vector3i &c) {
       //std::cout << "high" << std::endl;
       f = Eigen::Vector3i((xsym)-diff, c.y(), c.z());
     }
-    allowed[f] = designations[current_activity];
+    if (!is_build)
+      allowed[f] = designations[current_desig];
+    else
+      builds[f] = buildables[current_build];
     insert_y_symmetry(f);
   }
   insert_y_symmetry(c);
@@ -198,7 +225,10 @@ void Agony::insert_y_symmetry(const Eigen::Vector3i &c) {
     } else {
       f = Eigen::Vector3i(c.x(), (ysym)-diff, c.z());
     }
-    allowed[f] = designations[current_activity];
+    if (!is_build)
+      allowed[f] = designations[current_desig];
+    else
+      builds[f] = buildables[current_build];
   }
 }
 void Agony::insert_radial_symmetry(const Eigen::Vector3i &c) {
@@ -206,7 +236,10 @@ void Agony::insert_radial_symmetry(const Eigen::Vector3i &c) {
     int diff_x = c.x() - r_sym_x;
     int diff_y = c.y() - r_sym_y;
     auto f = Eigen::Vector3i(r_sym_x - diff_x, r_sym_y - diff_y, c.z());
-    allowed[f] = designations[current_activity];
+    if (!is_build)
+      allowed[f] = designations[current_desig];
+    else
+      builds[c] = buildables[current_build];
     insert_x_symmetry(f);
   }
   insert_x_symmetry(c);
@@ -214,7 +247,10 @@ void Agony::insert_radial_symmetry(const Eigen::Vector3i &c) {
 void Agony::designate(int x, int y, int z) {
   //std::cout<<x<<","<<y<<","<<z<<std::endl;
   Eigen::Vector3i c(x, y, z);
-  allowed[c] = designations[current_activity];
+  if (!is_build)
+    allowed[c] = designations[current_desig];
+  else
+    builds[c] = buildables[current_build];
   insert_radial_symmetry(c);
 }
 void Agony::designate() {
@@ -233,28 +269,51 @@ void Agony::long_desig(const sf::Vector2f &e) {
   long_desig();
 }
 void Agony::increase_activity() {
-  current_activity++;
-  current_activity %= 5;
+
+  if (is_build) {
+    current_build++;
+    current_build %= buildables.size();
+  } else {
+    current_desig++;
+    current_desig %= 5;
+  }
   update_text();
 }
 void Agony::decrease_activity() {
-  if (current_activity == 0)
-    current_activity = 4;
-  else
-    current_activity--;
-  current_activity %= 5;
+  if (is_build) {
+    if (current_build == 0)
+      current_build = buildables.size() - 1;
+    else
+      current_build--;
+  } else {
+    if (current_desig == 0)
+      current_desig = 4;
+    else
+      current_desig--;
+    current_desig %= 5;
+  }
   update_text();
 }
 void Agony::update_text() {
   std::string a;
   if (!is_file_entry) {
-    a = "Designating";
+    if (!is_build) {
+      a = "Designating";
+    } else {
+      a = "Building";
+    }
     if (isCircle) {
       a += "(Circle)";
     }
     a += ":";
-    a += designations[current_activity] == '\0' ? 'x' : designations[current_activity];
-    on_designation_change(current_activity);
+    if (!is_build) {
+      a += designations[current_desig] == '\0' ? 'x' : designations[current_desig];
+      on_designation_change(current_desig);
+    } else {
+      if(buildables[current_build]!="\0")
+      a += buildables[current_build];
+      else a+="removing";
+    }
   } else {
     if (is_saving) {
       if (serializing)
@@ -294,7 +353,7 @@ void Agony::add_radial_symmetry_at_cursor() {
     m_radial = false;
 }
 void Agony::set_thing(int x, int y, int z) {
-  allowed.insert(std::pair<Eigen::Vector3i, int>(Eigen::Vector3i(x, y, z), designations[current_activity]));
+  allowed.insert(std::pair<Eigen::Vector3i, int>(Eigen::Vector3i(x, y, z), designations[current_desig]));
   update();
 }
 void Agony::erase_position() {
@@ -381,7 +440,7 @@ void Agony::move_over(int x, int y) {
   setOrigin(g.x * csize + x * csize, g.y * csize + y * csize);
 }
 void Agony::set_designation_type(int i) {
-  current_activity = i;
+  current_desig = i;
   update_text();
 }
 void Agony::setActivityCallback(std::function<void(int)> a) {
@@ -407,8 +466,7 @@ void Agony::deserialize(const std::string &f) {
   update();
 }
 void Agony::handle_entry(sf::Event::TextEvent a) {
-  if (is_file_entry&&a.unicode<128
-      &&a.unicode!=8) {//filter out backspace.
+  if (is_file_entry && a.unicode < 128 && a.unicode != 8) { //filter out backspace.
     save_prompt += static_cast<char>(a.unicode);
   }
   update_text();
@@ -511,6 +569,8 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
   case sf::Keyboard::Equal:
     increase_activity();
     break;
+  case sf::Keyboard::B:
+    is_build = !is_build;
   case sf::Keyboard::Space:
     designate();
     break;
@@ -558,10 +618,9 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     cout << allowed.size() << endl;
     break;
   case sf::Keyboard::BackSpace:
-    if(is_file_entry){
+    if (is_file_entry) {
       save_prompt.pop_back();
     }
     break;
   }
-  
 }

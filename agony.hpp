@@ -15,6 +15,10 @@
 #include "pathfinder.hpp"
 
 static const char designations[] = {'d', 'i', 'j', 'u', '\0'};
+static const std::vector<std::string> buildables={"b","d","\0"};
+static const std::unordered_map<std::string,sf::Color> build_colors={
+  {"d",sf::Color(255,0,255)},{"b",sf::Color(0,0,255)}
+};
 class Agony : public sf::Drawable, public sf::Transformable {
 
 public:
@@ -80,6 +84,7 @@ private:
   int current_z;
   //std::set<Eigen::Vector3i> allowed;
   std::unordered_map<Eigen::Vector3i, char> allowed;
+  std::unordered_map<Eigen::Vector3i,std::string> builds;
   Eigen::Vector3i m_start, m_end;
   sf::VertexArray m_vertz;
   sf::Font fontthing;
@@ -89,7 +94,7 @@ private:
   bool mouse_is_over;
   int xsym, ysym, zsym;
   bool isDesignating, isCircle;
-  int current_activity;
+  int current_desig,current_build=0;
   mutable sf::Text zz;
   ///Radial symmetry location
   int r_sym_x, r_sym_y;
@@ -101,6 +106,7 @@ private:
   bool is_saving = false;
   bool is_file_entry = false;
   bool line_start=false;
+  bool is_build=false;
   mutable GraphAnalyzer running;
   mutable int max_path_ticks_per_frame=1;
   mutable bool runtime_tick=false;
