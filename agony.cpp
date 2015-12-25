@@ -407,9 +407,9 @@ void Agony::deserialize(const std::string &f) {
   update();
 }
 void Agony::handle_entry(sf::Event::TextEvent a) {
-  if (is_file_entry) {
+  if (is_file_entry&&a.unicode<128
+      &&a.unicode!=8) {//filter out backspace.
     save_prompt += static_cast<char>(a.unicode);
-    std::cout << save_prompt << endl;
   }
   update_text();
 }
@@ -453,7 +453,7 @@ void Agony::start_load() {
   serializing = true;
 }
 void Agony::handle_keyboard(sf::Event::KeyEvent a) {
-  if (is_file_entry && !(a.code == sf::Keyboard::Escape || a.code == sf::Keyboard::Return)) {
+  if (is_file_entry && !(a.code == sf::Keyboard::Escape || a.code == sf::Keyboard::Return || a.code == sf::Keyboard::BackSpace)) {
     return;
   }
   int times = 1;
@@ -557,5 +557,11 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
       cout << running.get_top_cycle() << " cycles" << endl;
     cout << allowed.size() << endl;
     break;
+  case sf::Keyboard::BackSpace:
+    if(is_file_entry){
+      save_prompt.pop_back();
+    }
+    break;
   }
+  
 }
