@@ -113,18 +113,15 @@ float GraphAnalyzer::get_progress() const {
   return top_cycles / float(ag.allowed.size()) * 100;
 }
 void GraphAnalyzer::output() {
-  ofstream output(filename);
   std::unordered_map<Eigen::Vector3i, double> maxes;
   for (auto i : costs) {
     auto z = i.first;
-    output << z[0] << " " << z[1] << " " << z[2] << " ";
     double max = 0;
     for (auto c : i.second) {
-      if (c.second > max && c.second != numeric_limits<double>::infinity())
-        max += c.second / double(i.second.size());
+      //if (c.second > max && c.second != numeric_limits<double>::infinity())
+        max += c.second;
     }
     maxes[i.first] = max;
-    output << max << endl;
   }
   auto c = ag.getBoundaries();
   write_ppm_to_file(filename, maxes,
