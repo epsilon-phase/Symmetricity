@@ -15,9 +15,9 @@
 #include "pathfinder.hpp"
 
 static const char designations[] = {'d', 'i', 'j', 'u', '\0'};
-static const std::vector<std::string> buildables={"b","d","\0"};
+static const std::vector<std::string> buildables={"b","d","p","\0"};
 static const std::unordered_map<std::string,sf::Color> build_colors={
-  {"d",sf::Color(255,0,255)},{"b",sf::Color(0,0,255)}
+  {"d",sf::Color(255,0,255)},{"b",sf::Color(0,0,255)},{"p",sf::Color(152,110,20)}
 };
 class Agony : public sf::Drawable, public sf::Transformable {
 
