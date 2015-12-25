@@ -46,9 +46,9 @@ public:
   void set_circle();
   void decrease_activity();
   void designate(int x, int y, int z);
-  void insert_x_symmetry(const Eigen::Vector3d &c);
-  void insert_y_symmetry(const Eigen::Vector3d &c);
-  void insert_radial_symmetry(const Eigen::Vector3d &c);
+  void insert_x_symmetry(const Eigen::Vector3i &c);
+  void insert_y_symmetry(const Eigen::Vector3i &c);
+  void insert_radial_symmetry(const Eigen::Vector3i &c);
   void designate();
   void mouse_over(const sf::Vector2f &e);
   void long_desig(const sf::Vector2f &e);
@@ -78,9 +78,9 @@ private:
   int csize;
   int cursor_x, cursor_y;
   int current_z;
-  //std::set<Eigen::Vector3d> allowed;
-  std::unordered_map<Eigen::Vector3d, char> allowed;
-  Eigen::Vector3d m_start, m_end;
+  //std::set<Eigen::Vector3i> allowed;
+  std::unordered_map<Eigen::Vector3i, char> allowed;
+  Eigen::Vector3i m_start, m_end;
   sf::VertexArray m_vertz;
   sf::Font fontthing;
   bool m_x_sym_on, m_y_sym_on, m_z_sym_on;

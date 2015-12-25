@@ -78,11 +78,11 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
         running.run_step();
         auto g = chrono::system_clock::now();
         auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(g - f).count();
-        if(dur==0)
-          dur=1;
-        if(dur>=10)
-          dur=10;
-        this->max_path_ticks_per_frame = (int)10.0/dur;
+        if (dur == 0)
+          dur = 1;
+        if (dur >= 10)
+          dur = 10;
+        this->max_path_ticks_per_frame = (int)10.0 / dur;
         runtime_tick = true;
       } else {
         for (int i = 0; i < max_path_ticks_per_frame; i++) {
@@ -96,8 +96,8 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   target.draw(zz);
 }
 void Agony::update() {
-  std::vector<Eigen::Vector3d> things;
-  std::vector<Eigen::Vector3d> torem;
+  std::vector<Eigen::Vector3i> things;
+  std::vector<Eigen::Vector3i> torem;
   for (auto i : allowed) {
     if (std::round(i.first.z()) == current_z) {
       if (i.second != '\0') {
@@ -146,9 +146,9 @@ void Agony::update() {
 }
 void Agony::long_desig() {
   if (!isDesignating) {
-    m_start = Eigen::Vector3d(cursor_x, cursor_y, current_z);
+    m_start = Eigen::Vector3i(cursor_x, cursor_y, current_z);
   } else {
-    m_end = Eigen::Vector3d(cursor_x, cursor_y, current_z);
+    m_end = Eigen::Vector3i(cursor_x, cursor_y, current_z);
     if (isCircle) {
       draw_circle();
       isCircle = false;
@@ -172,40 +172,40 @@ void Agony::long_desig() {
   update_text();
   isDesignating = !isDesignating;
 }
-void Agony::insert_x_symmetry(const Eigen::Vector3d &c) {
+void Agony::insert_x_symmetry(const Eigen::Vector3i &c) {
   if (m_x_sym_on) {
-    Eigen::Vector3d f;
+    Eigen::Vector3i f;
     int diff = std::abs(c.x() - (xsym));
     if (c.x() <= xsym) {
       //std::cout << "low" << std::endl;
-      f = Eigen::Vector3d((xsym)+diff, c.y(), c.z());
+      f = Eigen::Vector3i((xsym)+diff, c.y(), c.z());
     } else {
       //std::cout << "high" << std::endl;
-      f = Eigen::Vector3d((xsym)-diff, c.y(), c.z());
+      f = Eigen::Vector3i((xsym)-diff, c.y(), c.z());
     }
     allowed[f] = designations[current_activity];
     insert_y_symmetry(f);
   }
   insert_y_symmetry(c);
 }
-void Agony::insert_y_symmetry(const Eigen::Vector3d &c) {
+void Agony::insert_y_symmetry(const Eigen::Vector3i &c) {
 
   if (m_y_sym_on) {
-    Eigen::Vector3d f;
+    Eigen::Vector3i f;
     int diff = std::abs(c.y() - (ysym));
     if (c.y() <= ysym) {
-      f = Eigen::Vector3d(c.x(), (ysym)+diff, c.z());
+      f = Eigen::Vector3i(c.x(), (ysym)+diff, c.z());
     } else {
-      f = Eigen::Vector3d(c.x(), (ysym)-diff, c.z());
+      f = Eigen::Vector3i(c.x(), (ysym)-diff, c.z());
     }
     allowed[f] = designations[current_activity];
   }
 }
-void Agony::insert_radial_symmetry(const Eigen::Vector3d &c) {
+void Agony::insert_radial_symmetry(const Eigen::Vector3i &c) {
   if (m_radial) {
     int diff_x = c.x() - r_sym_x;
     int diff_y = c.y() - r_sym_y;
-    auto f = Eigen::Vector3d(r_sym_x - diff_x, r_sym_y - diff_y, c.z());
+    auto f = Eigen::Vector3i(r_sym_x - diff_x, r_sym_y - diff_y, c.z());
     allowed[f] = designations[current_activity];
     insert_x_symmetry(f);
   }
@@ -213,7 +213,7 @@ void Agony::insert_radial_symmetry(const Eigen::Vector3d &c) {
 }
 void Agony::designate(int x, int y, int z) {
   //std::cout<<x<<","<<y<<","<<z<<std::endl;
-  Eigen::Vector3d c(x, y, z);
+  Eigen::Vector3i c(x, y, z);
   allowed[c] = designations[current_activity];
   insert_radial_symmetry(c);
 }
@@ -294,11 +294,11 @@ void Agony::add_radial_symmetry_at_cursor() {
     m_radial = false;
 }
 void Agony::set_thing(int x, int y, int z) {
-  allowed.insert(std::pair<Eigen::Vector3d, int>(Eigen::Vector3d(x, y, z), designations[current_activity]));
+  allowed.insert(std::pair<Eigen::Vector3i, int>(Eigen::Vector3i(x, y, z), designations[current_activity]));
   update();
 }
 void Agony::erase_position() {
-  Eigen::Vector3d e(cursor_x, cursor_y, current_z);
+  Eigen::Vector3i e(cursor_x, cursor_y, current_z);
   allowed.erase(e);
 }
 std::tuple<int, int, int, int, int, int> Agony::getBoundaries() const {
@@ -328,7 +328,7 @@ void Agony::write_file_output(const std::string &output_name) const {
   for (int z = std::get<5>(boundaries); z >= std::get<2>(boundaries); z--) {
     for (int y = std::get<1>(boundaries); y <= std::get<4>(boundaries); y++) {
       for (int x = std::get<0>(boundaries); x <= std::get<3>(boundaries); x++) {
-        Eigen::Vector3d h = Eigen::Vector3d(x, y, z);
+        Eigen::Vector3i h = Eigen::Vector3i(x, y, z);
         if (allowed.find(h) != allowed.end()) {
           out << allowed.find(h)->second;
         } else {
@@ -347,8 +347,8 @@ void Agony::set_circle() {
   this->isCircle = true;
   update_text();
 }
-float distance(const Eigen::Vector3d &a, const Eigen::Vector3d &b) {
-  auto c = Eigen::Vector3d(a.x() - b.x(), a.y() - b.y(), a.z() - b.z());
+float distance(const Eigen::Vector3i &a, const Eigen::Vector3i &b) {
+  auto c = Eigen::Vector3i(a.x() - b.x(), a.y() - b.y(), a.z() - b.z());
   return std::sqrt(c.x() * c.x() + c.y() * c.y() + c.z() * c.z());
 }
 void Agony::draw_circle() {
@@ -402,7 +402,7 @@ void Agony::deserialize(const std::string &f) {
   double x, y, z;
   char c;
   while (q >> x >> y >> z >> c) {
-    allowed[Eigen::Vector3d(x, y, z)] = c;
+    allowed[Eigen::Vector3i(x, y, z)] = c;
   }
   update();
 }
@@ -515,7 +515,10 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     designate();
     break;
   case sf::Keyboard::R:
-    add_radial_symmetry_at_cursor();
+    if (a.shift)
+      m_radial = false;
+    else
+      add_radial_symmetry_at_cursor();
     break;
   case sf::Keyboard::Return:
     if (is_entry()) {
@@ -536,8 +539,8 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
       start_serialize();
     break;
   case sf::Keyboard::E:
-    if(save_prompt.size()!=0)
-      write_file_output(save_prompt+".csv");
+    if (save_prompt.size() != 0)
+      write_file_output(save_prompt + ".csv");
     break;
   case sf::Keyboard::F6:
     start_load();
@@ -550,9 +553,9 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     }
     break;
   case sf::Keyboard::F8:
-    if(running.is_set_up()&&!running.is_done())
-      cout<<running.get_top_cycle()<<" cycles"<<endl;
-    cout<<allowed.size()<<endl;
+    if (running.is_set_up() && !running.is_done())
+      cout << running.get_top_cycle() << " cycles" << endl;
+    cout << allowed.size() << endl;
     break;
   }
 }
