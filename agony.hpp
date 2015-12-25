@@ -87,9 +87,11 @@ private:
   std::unordered_map<Eigen::Vector3i,std::string> builds;
   Eigen::Vector3i m_start, m_end;
   sf::VertexArray m_vertz;
+  sf::VertexArray start_vertz;
   sf::Font fontthing;
   bool m_x_sym_on, m_y_sym_on, m_z_sym_on;
   Eigen::Matrix3d m_xsym, m_ysym;
+  Eigen::Vector2i start=Eigen::Vector2i(0,0);
   sf::Vector2f mouse_place;
   bool mouse_is_over;
   int xsym, ysym, zsym;

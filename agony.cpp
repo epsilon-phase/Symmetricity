@@ -94,6 +94,7 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   }
   zz.setOrigin(target.getSize().x / 2, target.getSize().y / 2);
   target.draw(zz);
+  target.draw(start_vertz, states);
 }
 void Agony::update() {
   std::vector<Eigen::Vector3i> designations;
@@ -114,9 +115,13 @@ void Agony::update() {
       }
     }
   }
+  for(auto i:builds){
+    if(allowed.find(i.first)==allowed.end())
+      torem_build.push_back(i.first);
+  }
   for (auto i : torem_desig)
     allowed.erase(i);
-  for(auto i:torem_build)
+  for (auto i : torem_build)
     builds.erase(i);
   m_vertz.resize(designations.size() * 4 + buildings.size() * 4);
 
@@ -156,10 +161,10 @@ void Agony::update() {
   int i = designations.size();
   for (auto z : buildings) {
     auto current = &m_vertz[(i + 1) * 4];
-    current[0].position = sf::Vector2f(z[0] * csize, z[1] * csize);
-    current[1].position = sf::Vector2f((z[0] + 0.5) * csize, z[1] * csize);
-    current[2].position = sf::Vector2f((.5 + z[0]) * csize, (0.5 + z[1]) * csize);
-    current[3].position = sf::Vector2f(z[0] * csize, (0.5 + z[1]) * csize);
+    current[0].position = sf::Vector2f((.25+z[0]) * csize, (.25+z[1]) * csize);
+    current[1].position = sf::Vector2f((z[0] + 0.75) * csize, (.25+z[1]) * csize);
+    current[2].position = sf::Vector2f((.75 + z[0]) * csize, (0.75 + z[1]) * csize);
+    current[3].position = sf::Vector2f((z[0]+.25) * csize, (0.75 + z[1]) * csize);
     sf::Color build_color = build_colors.find(builds.find(z)->second)->second;
     current[0].color = build_color;
     current[1].color = build_color;
@@ -167,6 +172,14 @@ void Agony::update() {
     current[3].color = build_color;
     i++;
   }
+  start_vertz.resize(3);
+  start_vertz.setPrimitiveType(sf::PrimitiveType::Triangles);
+  start_vertz[0].position = sf::Vector2f((start.x() + .5) * csize, start.y() * csize);
+  start_vertz[1].position = sf::Vector2f((1 + start.x()) * csize, (1 + start.y()) * csize);
+  start_vertz[2].position = sf::Vector2f(start.x() * csize, (1 + start.y()) * csize);
+  start_vertz[0].color = sf::Color::Blue;
+  start_vertz[1].color = sf::Color::Blue;
+  start_vertz[2].color = sf::Color::Blue;
 }
 void Agony::long_desig() {
   if (!isDesignating) {
@@ -239,7 +252,7 @@ void Agony::insert_radial_symmetry(const Eigen::Vector3i &c) {
     if (!is_build)
       allowed[f] = designations[current_desig];
     else
-      builds[c] = buildables[current_build];
+      builds[f] = buildables[current_build];
     insert_x_symmetry(f);
   }
   insert_x_symmetry(c);
@@ -310,9 +323,10 @@ void Agony::update_text() {
       a += designations[current_desig] == '\0' ? 'x' : designations[current_desig];
       on_designation_change(current_desig);
     } else {
-      if(buildables[current_build]!="\0")
-      a += buildables[current_build];
-      else a+="removing";
+      if (buildables[current_build] != "\0")
+        a += buildables[current_build];
+      else
+        a += "removing";
     }
   } else {
     if (is_saving) {
@@ -382,8 +396,8 @@ std::tuple<int, int, int, int, int, int> Agony::getBoundaries() const {
 }
 void Agony::write_file_output(const std::string &output_name) const {
   auto boundaries = getBoundaries();
-  ofstream out(output_name);
-  out << "#dig" << endl;
+  ofstream out(output_name + "-dig.csv");
+  out << "#dig start(" << abs(start[0] - get<0>(boundaries))+1 << ";" << abs(start[1] - get<1>(boundaries))+1 << ")" << endl;
   for (int z = std::get<5>(boundaries); z >= std::get<2>(boundaries); z--) {
     for (int y = std::get<1>(boundaries); y <= std::get<4>(boundaries); y++) {
       for (int x = std::get<0>(boundaries); x <= std::get<3>(boundaries); x++) {
@@ -401,6 +415,26 @@ void Agony::write_file_output(const std::string &output_name) const {
       out << "#>" << endl;
   }
   out.close();
+  if (builds.size() > 0) {
+    out.open(output_name + "-build.csv");
+    out << "#build start(" << abs(start[0] - get<0>(boundaries))+1 << ";" << abs(start[1] - get<1>(boundaries))+1 << ")" << endl;
+    for (int z = std::get<5>(boundaries); z >= std::get<2>(boundaries); z--) {
+      for (int y = std::get<1>(boundaries); y <= std::get<4>(boundaries); y++) {
+        for (int x = std::get<0>(boundaries); x <= std::get<3>(boundaries); x++) {
+          Eigen::Vector3i h = Eigen::Vector3i(x, y, z);
+          if (builds.find(h) != builds.end()) {
+            out << builds.find(h)->second;
+          } else {
+            out << " ";
+          }
+          out << ",";
+        }
+        out << "#" << endl;
+      }
+      if (z > std::get<2>(boundaries))
+        out << "#>" << endl;
+    }
+  }
 }
 void Agony::set_circle() {
   this->isCircle = true;
@@ -453,15 +487,27 @@ void Agony::serialize(const std::string &f) const {
     auto j = i.second;
     e << z.x() << " " << z.y() << " " << z.z() << " " << j << endl;
   }
+  for (auto i : builds) {
+    auto z = i.first;
+    auto j = i.second;
+    e << z.x() << " " << z.y() << " " << z.z() << " b " << j << endl;
+  }
   e.close();
 }
 void Agony::deserialize(const std::string &f) {
   allowed.clear();
+  builds.clear();
   ifstream q(f);
   double x, y, z;
   char c;
   while (q >> x >> y >> z >> c) {
-    allowed[Eigen::Vector3i(x, y, z)] = c;
+    if (c != 'b')
+      allowed[Eigen::Vector3i(x, y, z)] = c;
+    else {
+      string building;
+      q >> building;
+      builds[Eigen::Vector3i(x, y, z)] = building;
+    }
   }
   update();
 }
@@ -478,8 +524,9 @@ void Agony::finish_entry() {
     } else {
       if (serializing)
         serialize(save_prompt);
-      else
+      else {
         write_file_output(save_prompt);
+      }
     }
     previous_save = save_prompt;
   }
@@ -599,8 +646,9 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
       start_serialize();
     break;
   case sf::Keyboard::E:
-    if (save_prompt.size() != 0)
-      write_file_output(save_prompt + ".csv");
+    if (save_prompt.size() != 0) {
+      write_file_output(save_prompt);
+    }
     break;
   case sf::Keyboard::F6:
     start_load();
