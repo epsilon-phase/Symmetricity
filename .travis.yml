@@ -1,7 +1,7 @@
 language: c++
 before_install:
     - sudo apt-get update -qq
-    - sudo apt-get install -y libsfml-dev cmake eigen3
+    - sudo apt-get install -y libsfml-dev cmake libeigen3-dev
 script:
     - cmake .
     - make
