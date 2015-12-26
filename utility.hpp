@@ -1,7 +1,7 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 #include "city.h"
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 namespace std {
 template <>
 struct less<Eigen::Vector3i> {

@@ -1,5 +1,5 @@
 #include <iostream>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <SFML/Graphics.hpp>
 #include <set>
 #include <vector>

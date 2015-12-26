@@ -1,7 +1,7 @@
 #ifndef PPM_HPP
 #define PPM_HPP
 #include <unordered_map>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <fstream>
 #include <iostream>
 #include "agony.hpp"

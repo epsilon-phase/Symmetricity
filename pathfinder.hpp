@@ -1,7 +1,7 @@
 #ifndef PATHFINDER_HPP
 #define PATHFINDER_HPP
 #include <string>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <unordered_map>
 #include "utility.hpp"
 class Agony;

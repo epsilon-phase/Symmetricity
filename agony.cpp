@@ -82,7 +82,8 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
           dur = 1;
         if (dur >= 10)
           dur = 10;
-        this->max_path_ticks_per_frame = (int)10.0 / dur;
+        this->max_path_ticks_per_frame = (int)(1000/30.0) / dur;
+        cout<<"Ticks per frame:"<<max_path_ticks_per_frame<<endl;
         runtime_tick = true;
       } else {
         for (int i = 0; i < max_path_ticks_per_frame; i++) {
@@ -659,6 +660,7 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     else {
       running.toggle_pause();
     }
+    runtime_tick=false;
     break;
   case sf::Keyboard::F8:
     if (running.is_set_up() && !running.is_done())
