@@ -34,6 +34,9 @@ addons:
     - libxrandr2
     - libxrender1
     - libsoil1
+    - libudev-dev
+    - libxcb-randr-dev
+    - libxcb-image-dev
 script:
     - cmake .
     - make
