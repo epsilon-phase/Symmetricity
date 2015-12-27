@@ -17,17 +17,6 @@ static const char designations[] = {'d', 'i', 'j', 'u', '\0'};
 static const std::vector<std::string> buildables = {"b", "d", "p", "t", "c", "f", "Cw", "Cf", "CF", "\0"};
 static const std::unordered_map<std::string, sf::Color> build_colors = {
     {"d", sf::Color(255, 0, 255)}, {"b", sf::Color(0, 0, 255)}, {"p", sf::Color(152, 110, 20)}, {"Cw", sf::Color(40, 255, 0)}, {"Cf", sf::Color(255, 40, 0)}, {"CF", sf::Color(0, 40, 255)}, {"t", sf::Color(29, 133, 132)}, {"c", sf::Color(111, 79, 89)}};
-/**
-* A set containing the features that are likely to need to be queried and rooms expanded.
-*/
-static const std::unordered_set<std::string> room_things = {
-    "b", "t", "c"};
-static const std::array<std::string, 3> query_preference_order = {"b", "t", "c"};
-/**
-* Contains the constructions that block the expansions of rooms.
-*/
-static const std::unordered_set<std::string> blocking_constructions = {
-    "Cw", "d"};
 class Agony : public sf::Drawable, public sf::Transformable {
 
 public:
@@ -97,7 +86,6 @@ private:
   //std::set<Eigen::Vector3i> allowed;
   std::unordered_map<Eigen::Vector3i, char> allowed;
   std::unordered_map<Eigen::Vector3i, std::string> builds;
-  std::unordered_multimap<std::string, Eigen::Vector3i> furniture;
   Eigen::Vector3i m_start, m_end;
   sf::VertexArray m_vertz;
   sf::VertexArray start_vertz;
@@ -122,9 +110,7 @@ private:
   bool serializing = false;
   bool is_saving = false;
   bool is_file_entry = false;
-  bool line_start = false;
   bool is_build = false;
-  bool generate_query = true;
   mutable GraphAnalyzer running;
   mutable int max_path_ticks_per_frame = 1;
   mutable bool runtime_tick = false;
