@@ -383,7 +383,6 @@ void Agony::update_text() {
 }
 void Agony::add_x_symmetry_at_cursor() {
   if (xsym != cursor_x || !m_x_sym_on) {
-    m_xsym = make_Reflection(cursor_x, 1, 1);
     xsym = cursor_x;
     m_x_sym_on = true;
   } else {

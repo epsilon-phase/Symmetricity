@@ -11,7 +11,7 @@ find_package(eigen3)
 #endif()
 
 
-add_executable(symmetricity main.cpp TransformationMatrix.cpp agony.cpp pathfinder.cpp designation_menu.cpp city.cc)
+add_executable(symmetricity main.cpp agony.cpp pathfinder.cpp designation_menu.cpp city.cc)
 
 set(CMAKE_MODULE_PATH "./cmake_modules" ${CMAKE_MODULE_PATH})
 set(CMAKE_BUILD_TYPE Debug)
