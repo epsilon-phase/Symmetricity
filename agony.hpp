@@ -89,6 +89,8 @@ private:
   void draw_circle();
   void update_text();
   void abort_entry();
+  void add_rot_90_symmetry_at_cursor();
+  void insert_rot_90_symmetry(const Eigen::Vector3i& a);
   std::tuple<int, int, int, int, int, int> getBoundaries() const;
   int csize;
   int cursor_x, cursor_y;
@@ -112,7 +114,9 @@ private:
   mutable sf::Text zz;
   ///Radial symmetry location
   int r_sym_x, r_sym_y;
-  bool m_radial;
+  bool m_radial=false;
+  bool m_rot_90_ccw=false;
+  int rot_90_ccw_x,rot_90_ccw_y;
   std::function<void(int)> on_designation_change;
   std::string save_prompt;
   std::string previous_save;

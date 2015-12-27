@@ -2,6 +2,7 @@
 #include <fstream>
 #include <chrono>
 #include <cmath>
+#include <eigen3/Eigen/Geometry>
 using namespace std;
 Agony::Agony() : csize(10), cursor_x(0),
                  cursor_y(0), current_z(0),
@@ -48,6 +49,13 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
   rsym.setFillColor(sf::Color(255, 200, 0, 150));
   rsym.setOutlineColor(sf::Color(0, 0, 255, 255));
   rsym.setOutlineThickness(1);
+  sf::Text rot_90_ccw_txt;
+  rot_90_ccw_txt.setOrigin(getOrigin());
+  rot_90_ccw_txt.move(rot_90_ccw_x * csize, (rot_90_ccw_y - 1) * csize);
+  rot_90_ccw_txt.setString("r");
+  rot_90_ccw_txt.setCharacterSize(csize * 2);
+  rot_90_ccw_txt.setFont(this->fontthing);
+  rot_90_ccw_txt.setColor(sf::Color(220, 220, 220));
   if (isDesignating) {
     sf::CircleShape start_desig(csize / 2);
     start_desig.setFillColor(sf::Color(255, 0, 255));
@@ -70,6 +78,8 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     target.draw(xSym);
   if (m_radial)
     target.draw(rsym);
+  if (m_rot_90_ccw)
+    target.draw(rot_90_ccw_txt);
   target.draw(r);
   if (!running.is_done()) {
     if (!running.is_paused()) {
@@ -82,8 +92,8 @@ void Agony::draw(sf::RenderTarget &target, sf::RenderStates states) const {
           dur = 1;
         if (dur >= 10)
           dur = 10;
-        this->max_path_ticks_per_frame = (int)(1000/30.0) / dur;
-        cout<<"Ticks per frame:"<<max_path_ticks_per_frame<<endl;
+        this->max_path_ticks_per_frame = (int)(1000 / 30.0) / dur;
+        cout << "Ticks per frame:" << max_path_ticks_per_frame << endl;
         runtime_tick = true;
       } else {
         for (int i = 0; i < max_path_ticks_per_frame; i++) {
@@ -116,8 +126,8 @@ void Agony::update() {
       }
     }
   }
-  for(auto i:builds){
-    if(allowed.find(i.first)==allowed.end())
+  for (auto i : builds) {
+    if (allowed.find(i.first) == allowed.end())
       torem_build.push_back(i.first);
   }
   for (auto i : torem_desig)
@@ -162,10 +172,10 @@ void Agony::update() {
   int i = designations.size();
   for (auto z : buildings) {
     auto current = &m_vertz[(i + 1) * 4];
-    current[0].position = sf::Vector2f((.25+z[0]) * csize, (.25+z[1]) * csize);
-    current[1].position = sf::Vector2f((z[0] + 0.75) * csize, (.25+z[1]) * csize);
+    current[0].position = sf::Vector2f((.25 + z[0]) * csize, (.25 + z[1]) * csize);
+    current[1].position = sf::Vector2f((z[0] + 0.75) * csize, (.25 + z[1]) * csize);
     current[2].position = sf::Vector2f((.75 + z[0]) * csize, (0.75 + z[1]) * csize);
-    current[3].position = sf::Vector2f((z[0]+.25) * csize, (0.75 + z[1]) * csize);
+    current[3].position = sf::Vector2f((z[0] + .25) * csize, (0.75 + z[1]) * csize);
     sf::Color build_color = build_colors.find(builds.find(z)->second)->second;
     current[0].color = build_color;
     current[1].color = build_color;
@@ -243,6 +253,35 @@ void Agony::insert_y_symmetry(const Eigen::Vector3i &c) {
       allowed[f] = designations[current_desig];
     else
       builds[f] = buildables[current_build];
+    insert_rot_90_symmetry(f);
+  }
+  insert_rot_90_symmetry(c);
+}
+void Agony::insert_rot_90_symmetry(const Eigen::Vector3i &c) {
+  if (m_rot_90_ccw) {
+    int quadrant;
+    int x = c[0] - rot_90_ccw_x, y = c[1] - rot_90_ccw_y, z = c[2];
+    if (x >= 0 && y >= 0)
+      quadrant = 0;
+    else if (x < 0 && y > 0)
+      quadrant = 1;
+    else if (x < 0 && y < 0)
+      quadrant = 2;
+    else if (x > 0 && y < 0)
+      quadrant = 3;
+    Eigen::Vector3i result;
+    result[0] = x;
+    result[1] = y;
+    result[2] = z;
+    for (int i = 0; i < 4; i++) {
+      if (is_build)
+        builds[Eigen::Vector3i(result[0] + rot_90_ccw_x, result[1] + rot_90_ccw_y, result[2])] = buildables[current_build];
+      else
+        allowed[Eigen::Vector3i(result[0] + rot_90_ccw_x, result[1] + rot_90_ccw_y, result[2])] = designations[current_desig];
+      int tx = result[0];
+      result[0] = -result[1];
+      result[1] = tx;
+    }
   }
 }
 void Agony::insert_radial_symmetry(const Eigen::Vector3i &c) {
@@ -367,6 +406,16 @@ void Agony::add_radial_symmetry_at_cursor() {
   } else
     m_radial = false;
 }
+void Agony::add_rot_90_symmetry_at_cursor() {
+  if (m_rot_90_ccw || (rot_90_ccw_x != cursor_x && r_sym_y != cursor_y)) {
+    m_rot_90_ccw = true;
+    rot_90_ccw_x = cursor_x;
+    rot_90_ccw_y = cursor_y;
+    cout << "rotational_sym on" << endl;
+  } else {
+    m_rot_90_ccw = false;
+  }
+}
 void Agony::set_thing(int x, int y, int z) {
   allowed.insert(std::pair<Eigen::Vector3i, int>(Eigen::Vector3i(x, y, z), designations[current_desig]));
   update();
@@ -398,7 +447,7 @@ std::tuple<int, int, int, int, int, int> Agony::getBoundaries() const {
 void Agony::write_file_output(const std::string &output_name) const {
   auto boundaries = getBoundaries();
   ofstream out(output_name + "-dig.csv");
-  out << "#dig start(" << abs(start[0] - get<0>(boundaries))+1 << ";" << abs(start[1] - get<1>(boundaries))+1 << ")" << endl;
+  out << "#dig start(" << abs(start[0] - get<0>(boundaries)) + 1 << ";" << abs(start[1] - get<1>(boundaries)) + 1 << ")" << endl;
   for (int z = std::get<5>(boundaries); z >= std::get<2>(boundaries); z--) {
     for (int y = std::get<1>(boundaries); y <= std::get<4>(boundaries); y++) {
       for (int x = std::get<0>(boundaries); x <= std::get<3>(boundaries); x++) {
@@ -418,7 +467,7 @@ void Agony::write_file_output(const std::string &output_name) const {
   out.close();
   if (builds.size() > 0) {
     out.open(output_name + "-build.csv");
-    out << "#build start(" << abs(start[0] - get<0>(boundaries))+1 << ";" << abs(start[1] - get<1>(boundaries))+1 << ")" << endl;
+    out << "#build start(" << abs(start[0] - get<0>(boundaries)) + 1 << ";" << abs(start[1] - get<1>(boundaries)) + 1 << ")" << endl;
     for (int z = std::get<5>(boundaries); z >= std::get<2>(boundaries); z--) {
       for (int y = std::get<1>(boundaries); y <= std::get<4>(boundaries); y++) {
         for (int x = std::get<0>(boundaries); x <= std::get<3>(boundaries); x++) {
@@ -603,6 +652,9 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
   case sf::Keyboard::Comma:
     increase_z();
     break;
+  case sf::Keyboard::Num9:
+    add_rot_90_symmetry_at_cursor();
+    break;
   case sf::Keyboard::X:
     add_x_symmetry_at_cursor();
     break;
@@ -660,7 +712,7 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     else {
       running.toggle_pause();
     }
-    runtime_tick=false;
+    runtime_tick = false;
     break;
   case sf::Keyboard::F8:
     if (running.is_set_up() && !running.is_done())
