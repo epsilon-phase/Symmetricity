@@ -670,6 +670,7 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     break;
   case sf::Keyboard::B:
     is_build = !is_build;
+    break;
   case sf::Keyboard::Space:
     designate();
     break;
@@ -717,6 +718,7 @@ void Agony::handle_keyboard(sf::Event::KeyEvent a) {
     if (running.is_set_up() && !running.is_done())
       cout << running.get_top_cycle() << " cycles" << endl;
     cout << allowed.size() << endl;
+    cout<<builds.size()<< " Buildings"<<endl;
     break;
   case sf::Keyboard::BackSpace:
     if (is_file_entry) {
