@@ -4,6 +4,8 @@ Dwarf fortress editor with multiple symmetries
 
 This project is going to be superceded by a future implementation that will be cleaner, faster, and more easily extensible.
 
+Go [here](http://github.com/jaked122/symmetricality/)
+
 ![Symmetricity with dual axis symmetry](http://i.imgur.com/0GhIW9e.png)
 
 ![Symmetricity with some designation](http://i.imgur.com/NvNWFmH.png)
